@@ -19,10 +19,22 @@ class ToDoApp:
         self.root = root
         self.root.title("ToDo App")
         self.tasks = []
+        self.root.geometry("1000x650")
+
+        # En üst frame
+        self.top_frame = tk.Frame(self.root, bg="red", height=50)
+        self.top_frame.pack(side=tk.TOP, padx=10, pady=10, fill=tk.X)
+
+        self.title_label_top = tk.Label(self.top_frame, text="Welcome to ToDo App!", bg="red", fg="white", font=("Arial", 20), anchor="w")
+        self.title_label_top.pack(fill=tk.X, padx=10, pady=10)
+
+        # Alt main frame
+        self.bottom_frame = tk.Frame(self.root, bg="black")
+        self.bottom_frame.pack(side=tk.BOTTOM, padx=10, pady=10, fill=tk.BOTH, expand=True)
 
         # Sol frame
-        self.left_frame = tk.Frame(self.root)
-        self.left_frame.pack(side=tk.LEFT, padx=10, pady=10)
+        self.left_frame = tk.Frame(self.bottom_frame, bg="blue")
+        self.left_frame.pack(side=tk.LEFT, padx=100, pady=10)
 
         self.title_label = tk.Label(self.left_frame, text="TO-DO TITLE: ")
         self.title_label.pack()
@@ -36,14 +48,14 @@ class ToDoApp:
         self.description_entry = tk.Entry(self.left_frame)
         self.description_entry.pack()
 
-        self.add_button = tk.Button(self.left_frame, text="ADD TASK", command=self.add_task)
+        self.add_button = tk.Button(self.left_frame, text="ADD TASK", padx=10, pady=10, command=self.add_task)
         self.add_button.pack()
 
         # Sağ frame
-        self.right_frame = tk.Frame(self.root)
-        self.right_frame.pack(side=tk.RIGHT, padx=10, pady=10)
+        self.right_frame = tk.Frame(self.bottom_frame, bg="blue")
+        self.right_frame.pack(side=tk.RIGHT, padx=80, pady=10)
 
-        self.task_listbox = tk.Listbox(self.right_frame, height=15, width=40)
+        self.task_listbox = tk.Listbox(self.right_frame, height=15, width=80, bg="blue")
         self.task_listbox.pack()
 
         self.complete_button = tk.Button(self.right_frame, text="COMPLETE", command=self.complete_task)
