@@ -1,5 +1,5 @@
 import sqlite3
-
+from datetime import datetime
 def initialize_db():
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
@@ -12,6 +12,8 @@ def initialize_db():
                       user_id TEXT NOT NULL,
                       task TEXT NOT NULL,
                       status TEXT NOT NULL,
+                      is_favorite INTEGER default 0,
+                      date TEXT NOT NULL,
                       FOREIGN KEY (user_id) REFERENCES users(id))''')
     conn.commit()
     conn.close()
@@ -37,12 +39,21 @@ def check_credentials(username, password):
     conn.close()
     return result
 
-def add_task_to_db(user_id, task):
+def add_task_to_db(user_id, task, date, is_favorite):
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO tasks (user_id, task, status) VALUES (?, ?, ?)", (user_id, task, 0))
+    date = datetime.now().strftime("%Y-%m-%d")
+    cursor.execute("INSERT INTO tasks (user_id, task, status, date, is_favorite) VALUES (?, ?, ?, ?, ?)", (user_id, task, 0, date, is_favorite))
     conn.commit()
     conn.close()
+
+def get_tasks_from_db(user_id):
+    conn = sqlite3.connect("user_data.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, task, status, date, is_favorite FROM tasks WHERE user_id = ?", (user_id,))
+    tasks = cursor.fetchall()
+    conn.close()
+    return tasks
 
 def remove_task_from_db(task_id):
     conn = sqlite3.connect("user_data.db")
@@ -58,14 +69,6 @@ def update_task_status_in_db(task_id, status):
     conn.commit()
     conn.close()
 
-def get_tasks_from_db(user_id):
-    conn = sqlite3.connect("user_data.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, task, status FROM tasks WHERE user_id = ?", (user_id,))
-    tasks = cursor.fetchall()
-    conn.close()
-    return tasks
-
 def get_user_id(username):
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
@@ -73,3 +76,6 @@ def get_user_id(username):
     user_id = cursor.fetchone()[0]
     conn.close()
     return user_id
+
+
+
