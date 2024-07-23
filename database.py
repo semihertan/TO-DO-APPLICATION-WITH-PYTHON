@@ -77,5 +77,3 @@ def get_user_id(username):
     user_id = cursor.fetchone()[0]
     conn.close()
     return user_id
-
-initialize_db()
