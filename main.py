@@ -266,7 +266,7 @@ def main_window(username):
     user_id = database.get_user_id(username)
     tasks = database.get_tasks_from_db(user_id)
     # Kullanıcının görevlerini burada yükleyip ekranda gösterebilirsiniz
-    for task_id, task_text, task_status, is_favorite in tasks:
+    for task_id, task_text, task_status, is_favorite, due_date in tasks:
         var = IntVar(value=task_status)
         checkbox = CTkCheckBox(master=checkbox_frame, text=task_text, variable=var, command=lambda: database.update_task_status_in_db(task_id, var.get()))
         checkbox.pack(anchor="w", padx=10, pady=5)
@@ -339,15 +339,59 @@ def main_window(username):
         CTkRadioButton(master=new_task_window, text="Add To Favorites", variable=is_favorite_var, value=1).pack(pady=5)
         CTkRadioButton(master=new_task_window, text="Normal", variable=is_favorite_var, value=0).pack(pady=5)
 
+        def open_calendar():
+            calendar_window = CTkToplevel(app)
+            calendar_window.geometry("300x300")
+            calendar_window.resizable(0, 0)
+
+            calendar_window.geometry(f"{300}x{300}+{new_x}+{new_y}")
+            calendar_window.transient(app)
+            calendar_window.grab_set()
+
+            today = datetime.today()
+            cal = Calendar(calendar_window, selectmode='day', year=today.year, month=today.month, day=today.day,
+                           date_pattern='dd.mm.yyyy')
+            cal.pack(pady=20)
+
+            def select_date():
+                selected_date = cal.selection_get()
+                selected_due_date.set(selected_date.strftime("%d.%m.%Y"))
+                calendar_window.destroy()
+
+            select_button = CTkButton(master=calendar_window, text="Select Date", command=select_date)
+            select_button.pack(pady=10)
+
+        selected_due_date = StringVar()
+        selected_due_date.set("No date selected")
+
         def save_task():
             task_name = task_entry.get()
             is_favorite = is_favorite_var.get()
             if task_name:
-                task_id = database.add_task_to_db(user_id, task_name, is_favorite)
+                task_id = database.add_task_to_db(user_id, task_name, is_favorite, selected_due_date)
                 add_task(task_id, task_name)
                 refresh_task_list()
                 update_task_status()
                 new_task_window.destroy()
+
+        date_options = ["No Due Date", "Today", "Tomorrow", "Next Week", "Pick a Date"]
+        selected_date_option = StringVar(value=date_options[0])
+
+        def handle_date_option(choice):
+            if choice == "Today":
+                selected_due_date.set(datetime.today().strftime("%d.%m.%Y"))
+            elif choice == "Tomorrow":
+                selected_due_date.set((datetime.today() + timedelta(days=1)).strftime("%d.%m.%Y"))
+            elif choice == "Next Week":
+                selected_due_date.set((datetime.today() + timedelta(weeks=1)).strftime("%d.%m.%Y"))
+            elif choice == "Pick a Date":
+                open_calendar()
+
+        date_menu = CTkOptionMenu(new_task_window, values=date_options, command=handle_date_option, variable=selected_date_option)
+        date_menu.pack(pady=10)
+
+        selected_date_label = CTkLabel(master=new_task_window, textvariable=selected_due_date)
+        selected_date_label.pack(pady=5)
 
         save_button = CTkButton(master=new_task_window, text="Save Task", command=save_task)
         save_button.pack(pady=20)
@@ -360,10 +404,12 @@ def main_window(username):
         task_list = database.get_tasks_from_db(user_id)
         checkboxes.clear()
 
-        for task_id, task_text, task_status, is_favorite in task_list:
+        for task_id, task_text, task_status, is_favorite, selected_due_date in task_list:
             display_text = f"{task_text}"
+            if selected_due_date:
+                display_text += selected_due_date
             if is_favorite:
-                display_text += " ★"
+                display_text += "   ★"
             var = IntVar(value=task_status)
             checkbox = CTkCheckBox(master=checkbox_frame, text=display_text, variable=var, command=update_task_status)
             checkbox.pack(anchor="w", padx=10, pady=5)
@@ -388,8 +434,10 @@ def main_window(username):
         remove_frame.pack(pady=10)
 
         remove_vars = []
-        for task_id, task_text, task_status, is_favorite in task_list:
+        for task_id, task_text, task_status, is_favorite, due_date in task_list:
             var = IntVar()
+            if is_favorite:
+                task_text += " ★"
             remove_checkbox = CTkCheckBox(master=remove_frame, text=task_text, variable=var)
             remove_checkbox.pack(anchor="w", padx=10, pady=5)
             remove_vars.append((task_id, var))
