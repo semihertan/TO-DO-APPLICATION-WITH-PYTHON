@@ -151,13 +151,13 @@ def main_window(username):
     analytics_img = CTkImage(dark_image=analytics_img_data, light_image=analytics_img_data)
 
     CTkButton(master=left_frame, image=analytics_img, text="Dashboard", fg_color="transparent", font=("Arial Bold", 14),
-              hover_color="#207244", anchor="w").pack(anchor="center", ipady=5, pady=(60, 0))
+              hover_color="#121424", anchor="w").pack(anchor="center", ipady=5, pady=(60, 0))
 
     # ...2 butonu
     list_img_data = Image.open("list_icon.png")
     list_img = CTkImage(dark_image=list_img_data, light_image=list_img_data)
     CTkButton(master=left_frame, image=list_img, text="Orders", fg_color="transparent", font=("Arial Bold", 14),
-              hover_color="#207244", anchor="w").pack(anchor="center", ipady=5, pady=(16, 0))
+              hover_color="#121424", anchor="w").pack(anchor="center", ipady=5, pady=(16, 0))
 
     # ...3 butonu
     returns_img_data = Image.open("calendar_icon.png")
@@ -170,7 +170,7 @@ def main_window(username):
     person_img_data = Image.open("person_icon.png")
     person_img = CTkImage(dark_image=person_img_data, light_image=person_img_data)
     CTkButton(master=left_frame, image=person_img, text="Account", fg_color="transparent", font=("Arial Bold", 14),
-              hover_color="#207244", anchor="w").pack(anchor="center", ipady=5, pady=(160, 0))
+              hover_color="#121424", anchor="w").pack(anchor="center", ipady=5, pady=(160, 0))
 
     # ayarlar butonu
     settings_img_data = Image.open("settings.png")
@@ -258,6 +258,11 @@ def main_window(username):
     success_percentage_value_label = CTkLabel(master=success_frame, text="0%", font=("Arial", 30))
     success_percentage_value_label.place(x=142, y=50)
 
+    # sorting filter option menu
+    sort_menu = CTkOptionMenu(master=app, values=["Sort by Favorite", "Sort by Due Date", "Sort Alphabetically"],
+                              command=lambda criteria: refresh_task_list(criteria))
+    sort_menu.place(x=280, y=370)
+
 
     pygame.mixer.init()
     pygame.mixer.music.load(r"C:\Users\semih\PycharmProjects\TO-DO LIST APP\success_bell-6776.mp3")
@@ -271,6 +276,7 @@ def main_window(username):
         checkbox = CTkCheckBox(master=checkbox_frame, text=task_text, variable=var, command=lambda: database.update_task_status_in_db(task_id, var.get()))
         checkbox.pack(anchor="w", padx=10, pady=5)
         task_list.append((task_id, var))
+
 
     def update_task_status():
         global previous_tasks_done
@@ -362,7 +368,7 @@ def main_window(username):
             select_button.pack(pady=10)
 
         selected_due_date = StringVar()
-        selected_due_date.set("No date selected")
+        selected_due_date.set("No Date Selected")
 
         def save_task():
             task_name = task_entry.get()
@@ -396,7 +402,16 @@ def main_window(username):
         save_button = CTkButton(master=new_task_window, text="Save Task", command=save_task)
         save_button.pack(pady=20)
 
-    def refresh_task_list():
+    def sort_tasks(tasks, criteria):
+        if criteria == "Sort by Favorite":
+            tasks.sort(key=lambda x: x[3], reverse=True)
+        elif criteria == "Sort by Due Date":
+            tasks.sort(key=lambda x: datetime.strptime(x[4], "%d.%m.%Y") if x[4] != "No Date Selected" else datetime.max)
+        elif criteria == "Sort Alphabetically":
+            tasks.sort(key=lambda x: x[1].lower())
+        return tasks
+
+    def refresh_task_list(criteria=None):
         for widget in checkbox_frame.winfo_children():
             widget.destroy()
 
@@ -404,10 +419,11 @@ def main_window(username):
         task_list = database.get_tasks_from_db(user_id)
         checkboxes.clear()
 
+        if criteria:
+            task_list = sort_tasks(task_list, criteria)
+
         for task_id, task_text, task_status, is_favorite, selected_due_date in task_list:
-            display_text = f"{task_text}"
-            if selected_due_date:
-                display_text += selected_due_date
+            display_text = f"{task_text} {selected_due_date}" if selected_due_date != "No Date Selected" else f"{task_text}"
             if is_favorite:
                 display_text += "   ★"
             var = IntVar(value=task_status)
