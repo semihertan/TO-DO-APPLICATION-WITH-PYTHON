@@ -1,7 +1,6 @@
+from tkinter import StringVar
 import sqlite3
 from datetime import datetime
-import os
-
 def initialize_db():
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
@@ -15,6 +14,7 @@ def initialize_db():
                       task TEXT NOT NULL,
                       status TEXT NOT NULL,
                       is_favorite INTEGER default 0,
+                      due_date TEXT,
                       FOREIGN KEY (user_id) REFERENCES users(id))''')
     conn.commit()
     conn.close()
@@ -40,17 +40,18 @@ def check_credentials(username, password):
     conn.close()
     return result
 
-def add_task_to_db(user_id, task, is_favorite):
+def add_task_to_db(user_id, task, is_favorite, due_date):
+    due_date_str = due_date.get() if isinstance(due_date, StringVar) else due_date
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO tasks (user_id, task, status, is_favorite) VALUES (?, ?, ?, ?)", (user_id, task, 0, is_favorite))
+    cursor.execute("INSERT INTO tasks (user_id, task, status, is_favorite, due_date) VALUES (?, ?, ?, ?, ?)", (user_id, task, 0, is_favorite, due_date_str))
     conn.commit()
     conn.close()
 
 def get_tasks_from_db(user_id):
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT id, task, status, is_favorite FROM tasks WHERE user_id = ?", (user_id,))
+    cursor.execute("SELECT id, task, status, is_favorite, due_date FROM tasks WHERE user_id = ?", (user_id,))
     tasks = cursor.fetchall()
     conn.close()
     return tasks
