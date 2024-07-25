@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 import pygame
 import sqlite3
 import database
+from plyer import notification
+import time
 
 set_default_color_theme("NightTrain.json")
 
@@ -131,6 +133,7 @@ def main_window(username):
     task_list = database.get_tasks_from_db(user_id)
 
     app = CTk()
+    app.title("ERTAN")
     app.geometry("900x650")
     app.resizable(0, 0)
     set_appearance_mode("dark")
@@ -153,19 +156,18 @@ def main_window(username):
     CTkButton(master=left_frame, image=analytics_img, text="Dashboard", fg_color="transparent", font=("Arial Bold", 14),
               hover_color="#121424", anchor="w").pack(anchor="center", ipady=5, pady=(60, 0))
 
-    # ...2 butonu
+    # notifications button
     list_img_data = Image.open("list_icon.png")
     list_img = CTkImage(dark_image=list_img_data, light_image=list_img_data)
-    CTkButton(master=left_frame, image=list_img, text="Orders", fg_color="transparent", font=("Arial Bold", 14),
-              hover_color="#121424", anchor="w").pack(anchor="center", ipady=5, pady=(16, 0))
+    CTkButton(master=left_frame, image=list_img, text="Notifications", fg_color="transparent", font=("Arial Bold", 14),
+              hover_color="#121424", anchor="w", command=lambda: notifications_window()).pack(anchor="center", ipady=5, pady=(16, 0))
 
-    # ...3 butonu
+    # calendar button
     returns_img_data = Image.open("calendar_icon.png")
     returns_img = CTkImage(dark_image=returns_img_data, light_image=returns_img_data)
     CTkButton(master=left_frame, image=returns_img, text="Calendar", fg_color="transparent", font=("Arial Bold", 14),
               hover_color="#121424", anchor="w", command=lambda: open_calendar_window()).pack(anchor="center", ipady=5,
                                                                                               pady=(16, 0))
-
     # hesap butonu
     person_img_data = Image.open("person_icon.png")
     person_img = CTkImage(dark_image=person_img_data, light_image=person_img_data)
@@ -315,6 +317,47 @@ def main_window(username):
         cal = Calendar(calendar_window, selectmode='day', year=today.year, month=today.month, day=today.day)
         cal.pack(pady=90)
 
+    def notifications_window():
+        notifications_window = CTkToplevel(app)
+        notifications_window.geometry("500x500")
+        notifications_window.title("Notifications")
+        notifications_window.resizable(0, 0)
+
+        new_window_x = app.winfo_x() + (app.winfo_width() - 500) // 2
+        new_window_y = app.winfo_y() + (app.winfo_height() - 500) // 2
+
+        notifications_window.geometry(f"500x500+{new_window_x}+{new_window_y}")
+        notifications_window.transient(app)
+        notifications_window.grab_set()
+
+        past_due_tasks_frame = CTkScrollableFrame(master=notifications_window, width=250, height=275).pack(padx=5, pady=5)
+
+        past_due_tasks = database.get_past_due_tasks(user_id)
+        for tasks in past_due_tasks:
+            task, due_date = tasks
+            task_label = CTkLabel(master=past_due_tasks_frame, text=f"{task}   {due_date}", text_color="red")
+            task_label.pack(padx=5, pady=5, anchor="w")
+
+        pass
+
+    def reminder_window():
+        reminder_window = CTkToplevel(app)
+        reminder_window.geometry("500x500")
+        reminder_window.title("Set Reminder")
+        reminder_window.resizable(0, 0)
+
+        new_window_x = app.winfo_x() + (app.winfo_width() - 500) // 2
+        new_window_y = app.winfo_y() + (app.winfo_height() - 500) // 2
+
+        reminder_window.geometry(f"500x500+{new_window_x}+{new_window_y}")
+        reminder_window.transient(app)
+        reminder_window.grab_set()
+
+        CTkEntry(master=reminder_window, placeholder_text="Enter Date and Time").pack(padx=5, pady=5, anchor="w")
+        set_button = CTkButton(master=reminder_window, text="Set Reminder", command=lambda: database.add_task_to_db(user_id)).pack(padx=5, pady=5, anchor="w")
+
+
+
     def add_task(task_id, task_text):
         var = IntVar()
         checkbox_text = f"{task_text}"
@@ -325,6 +368,7 @@ def main_window(username):
 
     def add_task_window():
         new_task_window = CTkToplevel(app)
+        new_task_window.title("Add Task")
         new_task_window.geometry("300x200")
         new_task_window.resizable(0, 0)
 
@@ -345,8 +389,12 @@ def main_window(username):
         CTkRadioButton(master=new_task_window, text="Add To Favorites", variable=is_favorite_var, value=1).pack(pady=5)
         CTkRadioButton(master=new_task_window, text="Normal", variable=is_favorite_var, value=0).pack(pady=5)
 
+        reminder_button = CTkButton(master=new_task_window, text="Add reminder")
+        reminder_button.pack(pady=5)
+
         def open_calendar():
             calendar_window = CTkToplevel(app)
+            calendar_window.title("Calendar")
             calendar_window.geometry("300x300")
             calendar_window.resizable(0, 0)
 
@@ -433,6 +481,7 @@ def main_window(username):
 
     def remove_task_window():
         remove_window = CTkToplevel(app)
+        remove_window.title("Remove Task")
         remove_window.geometry("300x350")
         remove_window.resizable(0, 0)
 
