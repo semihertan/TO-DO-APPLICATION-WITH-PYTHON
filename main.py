@@ -317,6 +317,8 @@ def main_window(username):
         cal = Calendar(calendar_window, selectmode='day', year=today.year, month=today.month, day=today.day)
         cal.pack(pady=90)
 
+
+
     def notifications_window():
         notifications_window = CTkToplevel(app)
         notifications_window.geometry("500x500")
@@ -330,31 +332,18 @@ def main_window(username):
         notifications_window.transient(app)
         notifications_window.grab_set()
 
-        past_due_tasks_frame = CTkScrollableFrame(master=notifications_window, width=250, height=275).pack(padx=5, pady=5)
+        past_tasks_frame = CTkScrollableFrame(master=notifications_window, width=400, height=300)
+        past_tasks_frame.pack(pady=10)
+
 
         past_due_tasks = database.get_past_due_tasks(user_id)
-        for tasks in past_due_tasks:
-            task, due_date = tasks
-            task_label = CTkLabel(master=past_due_tasks_frame, text=f"{task}   {due_date}", text_color="red")
+        for task in past_due_tasks:
+            task_name, due_date = task
+            task_label = CTkLabel(master=past_tasks_frame, text=f"{task_name}   {due_date}", text_color="red")
             task_label.pack(padx=5, pady=5, anchor="w")
 
         pass
 
-    def reminder_window():
-        reminder_window = CTkToplevel(app)
-        reminder_window.geometry("500x500")
-        reminder_window.title("Set Reminder")
-        reminder_window.resizable(0, 0)
-
-        new_window_x = app.winfo_x() + (app.winfo_width() - 500) // 2
-        new_window_y = app.winfo_y() + (app.winfo_height() - 500) // 2
-
-        reminder_window.geometry(f"500x500+{new_window_x}+{new_window_y}")
-        reminder_window.transient(app)
-        reminder_window.grab_set()
-
-        CTkEntry(master=reminder_window, placeholder_text="Enter Date and Time").pack(padx=5, pady=5, anchor="w")
-        set_button = CTkButton(master=reminder_window, text="Set Reminder", command=lambda: database.add_task_to_db(user_id)).pack(padx=5, pady=5, anchor="w")
 
 
 
@@ -389,9 +378,6 @@ def main_window(username):
         CTkRadioButton(master=new_task_window, text="Add To Favorites", variable=is_favorite_var, value=1).pack(pady=5)
         CTkRadioButton(master=new_task_window, text="Normal", variable=is_favorite_var, value=0).pack(pady=5)
 
-        reminder_button = CTkButton(master=new_task_window, text="Add reminder")
-        reminder_button.pack(pady=5)
-
         def open_calendar():
             calendar_window = CTkToplevel(app)
             calendar_window.title("Calendar")
@@ -417,6 +403,7 @@ def main_window(username):
 
         selected_due_date = StringVar()
         selected_due_date.set("No Date Selected")
+
 
         def save_task():
             task_name = task_entry.get()
@@ -449,6 +436,7 @@ def main_window(username):
 
         save_button = CTkButton(master=new_task_window, text="Save Task", command=save_task)
         save_button.pack(pady=20)
+
 
     def sort_tasks(tasks, criteria):
         if criteria == "Sort by Favorite":
