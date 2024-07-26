@@ -178,7 +178,7 @@ def main_window(username):
     settings_img_data = Image.open("settings.png")
     settings_img = CTkImage(dark_image=settings_img_data, light_image=settings_img_data)
     CTkButton(master=left_frame, image=settings_img, text="Settings", fg_color="transparent", font=("Arial Bold", 14),
-              hover_color="#121424", anchor="w").pack(anchor="center", ipady=5, pady=(16, 0))
+              hover_color="#121424", anchor="w", command=lambda: settings_window()).pack(anchor="center", ipady=5, pady=(16, 0))
 
     # sağ arkaplan
     right_bg_image_data = Image.open("tp238-background-03 (1) (2).jpg")
@@ -265,14 +265,14 @@ def main_window(username):
                               command=lambda criteria: refresh_task_list(criteria))
     sort_menu.place(x=280, y=370)
 
-
+    # sound effect loading
     pygame.mixer.init()
     pygame.mixer.music.load(r"C:\Users\semih\PycharmProjects\TO-DO LIST APP\success_bell-6776.mp3")
 
 
     user_id = database.get_user_id(username)
     tasks = database.get_tasks_from_db(user_id)
-    # Kullanıcının görevlerini burada yükleyip ekranda gösterebilirsiniz
+    # getting user id and user tasks from db
     for task_id, task_text, task_status, is_favorite, due_date in tasks:
         var = IntVar(value=task_status)
         checkbox = CTkCheckBox(master=checkbox_frame, text=task_text, variable=var, command=lambda: database.update_task_status_in_db(task_id, var.get()))
@@ -318,7 +318,6 @@ def main_window(username):
         cal.pack(pady=90)
 
 
-
     def notifications_window():
         notifications_window = CTkToplevel(app)
         notifications_window.geometry("500x500")
@@ -335,15 +334,46 @@ def main_window(username):
         past_tasks_frame = CTkScrollableFrame(master=notifications_window, width=400, height=300)
         past_tasks_frame.pack(pady=10)
 
-
         past_due_tasks = database.get_past_due_tasks(user_id)
         for task in past_due_tasks:
             task_name, due_date = task
             task_label = CTkLabel(master=past_tasks_frame, text=f"{task_name}   {due_date}", text_color="red")
             task_label.pack(padx=5, pady=5, anchor="w")
 
-        pass
+    def settings_window():
+        settings_window = CTkToplevel(app)
+        settings_window.title("Settings")
+        settings_window.geometry("500x500")
+        settings_window.resizable(0, 0)
 
+        new_x = app.winfo_x() + (app.winfo_width() - 500) // 2
+        new_y = app.winfo_y() + (app.winfo_height() - 500) // 2
+
+        settings_window.geometry(f"500x500+{new_x}+{new_y}")
+        settings_window.transient(app)
+        settings_window.grab_set()
+
+        current_username = database.get_username(user_id)
+        current_password = database.get_password(user_id)
+        username_var = StringVar()
+        username_var.set(current_username)
+        password_var = StringVar()
+        password_var.set(current_password)
+
+        CTkLabel(master=settings_window, text="Change Username").pack(pady=10)
+        username_entry = CTkEntry(master=settings_window, placeholder_text="new username", textvariable=username_var)
+        username_entry.pack(pady=10)
+
+        CTkLabel(master=settings_window, text="Change Password").pack(pady=10)
+        password_entry = CTkEntry(master=settings_window, placeholder_text="new password", textvariable=password_var)
+        password_entry.pack(pady=10)
+
+        def save_changes():
+            database.save_user(user_id, username_entry.get(), password_entry.get())
+            messagebox.showinfo("Saved Changes", "Save changes successfully")
+
+        save_button = CTkButton(master=settings_window, text="Save Changes", command=save_changes)
+        save_button.pack(pady=20)
 
 
 
