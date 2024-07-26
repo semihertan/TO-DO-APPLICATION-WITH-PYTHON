@@ -33,6 +33,29 @@ def add_user(username, password):
         print("Kullanıcı adı zaten mevcut.")
     conn.close()
 
+def get_username(user_id):
+    conn = sqlite3.connect("user_data.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT username FROM users WHERE id = ?", (user_id,))
+    username = cursor.fetchone()[0]
+    conn.close()
+    return username
+
+def get_password(user_id):
+    conn = sqlite3.connect("user_data.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT password FROM users WHERE id = ?", (user_id,))
+    password = cursor.fetchone()[0]
+    conn.close()
+    return password
+
+def save_user(user_id, username, password):
+    conn = sqlite3.connect("user_data.db")
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET username = ?, password = ? WHERE id = ?", (username, password, user_id))
+    conn.commit()
+    conn.close()
+
 # kullanıcı bilgileri kontrol fonk.
 def check_credentials(username, password):
     conn = sqlite3.connect("user_data.db")
