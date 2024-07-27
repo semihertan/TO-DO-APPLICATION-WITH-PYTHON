@@ -3,6 +3,7 @@ from PIL import Image
 from tkinter import StringVar, IntVar, messagebox
 from tkcalendar import Calendar
 from datetime import datetime, timedelta
+import threading
 import pygame
 import sqlite3
 import database
@@ -13,39 +14,47 @@ set_default_color_theme("NightTrain.json")
 
 database.initialize_db()
 
-login_bg_data = Image.open("login_bg_2.jpg")
-email_icon_data = Image.open("email-icon.png")
-password_icon_data = Image.open("password-icon.png")
+signup_bg_data = Image.open("signup_bg.jpg")
+login_bg_data = Image.open("login_bg_3.jpg")
+username_icon_data = Image.open("username_icon.png")
+password_icon_data = Image.open("password_icon.png")
 google_icon_data = Image.open("google-icon.png")
 
+signup_bg_image = CTkImage(dark_image=signup_bg_data, light_image=signup_bg_data, size=(300, 500))
 login_bg_image = CTkImage(dark_image=login_bg_data, light_image=login_bg_data, size=(300, 480))
-email_icon = CTkImage(dark_image=email_icon_data, light_image=email_icon_data, size=(20, 20))
+username_icon = CTkImage(dark_image=username_icon_data, light_image=username_icon_data, size=(20, 20))
 password_icon = CTkImage(dark_image=password_icon_data, light_image=password_icon_data, size=(17, 17))
 google_icon = CTkImage(dark_image=google_icon_data, light_image=google_icon_data, size=(17, 17))
 
 # Sign-up window
 def signup_window():
     signup_win = CTkToplevel()
-    signup_win.geometry("300x500")
+    signup_win.title("Sign Up")
+    signup_win.geometry("300x450")
     signup_win.resizable(0, 0)
 
-    CTkLabel(master=signup_win, text="  Username", text_color="#601E88", anchor="w", justify="left", font=("Arial", 14, "bold"),
-             image=email_icon, compound="left").pack(anchor="w", pady=(38, 0), padx=(25, 0))
-    username_entry = CTkEntry(master=signup_win, width=225, fg_color="#EEEEEE", border_color="#601E88", border_width=2, text_color="#000000")
-    username_entry.pack(anchor="w", padx=(25, 0))
+    CTkLabel(master=signup_win, text="Welcome among us!", text_color="SkyBlue4", anchor="w", justify="left",
+             font=("Arial", 24, "bold")).pack(anchor="w", pady=(50, 5), padx=(37, 0))
+    CTkLabel(master=signup_win, text="Enter a username and password to register", text_color="salmon3", anchor="w", justify="left",
+             font=("Arial", 10, "bold")).pack(anchor="w", padx=(37, 0))
+
+    CTkLabel(master=signup_win, text="  Username", text_color="SkyBlue4", anchor="w", justify="left", font=("Arial", 14, "bold"),
+             image=username_icon, compound="left").pack(anchor="w", pady=(30, 0), padx=(37, 0))
+    username_entry = CTkEntry(master=signup_win, width=225, fg_color="#EEEEEE", border_color="SkyBlue4", border_width=2, text_color="#000000")
+    username_entry.pack(anchor="w", padx=(37, 0))
 
     # password label and entry
-    CTkLabel(master=signup_win, text="  Password", text_color="#601E88", anchor="w", justify="left",
-             font=("Arial", 14, "bold"), image=password_icon, compound="left").pack(anchor="w", pady=(21, 0),padx=(25, 0))
-    password_entry = CTkEntry(master=signup_win, width=225, fg_color="#EEEEEE", border_color="#601E88", border_width=2,
-                              text_color="#000000", show="*")
-    password_entry.pack(anchor="w", padx=(25, 0))
+    CTkLabel(master=signup_win, text="  Password", text_color="SkyBlue4", anchor="w", justify="left",
+             font=("Arial", 14, "bold"), image=password_icon, compound="left").pack(anchor="w", pady=(21, 0),padx=(37, 0))
+    password_entry = CTkEntry(master=signup_win, width=225, fg_color="#EEEEEE", border_color="SkyBlue4", border_width=2,
+                              text_color="#000000")
+    password_entry.pack(anchor="w", padx=(37, 0))
 
-    CTkLabel(master=signup_win, text="  Confirm Password", text_color="#601E88", anchor="w", justify="left",
-             font=("Arial", 14, "bold"), image=password_icon, compound="left").pack(anchor="w", pady=(21, 0), padx=(25, 0))
-    confirm_password_entry = CTkEntry(master=signup_win, width=225, fg_color="#EEEEEE", border_color="#601E88", border_width=2,
-                              text_color="#000000", show="*")
-    confirm_password_entry.pack(anchor="w", padx=(25, 0))
+    CTkLabel(master=signup_win, text="  Confirm Password", text_color="SkyBlue4", anchor="w", justify="left",
+             font=("Arial", 14, "bold"), image=password_icon, compound="left").pack(anchor="w", pady=(21, 0), padx=(37, 0))
+    confirm_password_entry = CTkEntry(master=signup_win, width=225, fg_color="#EEEEEE", border_color="SkyBlue4", border_width=2,
+                              text_color="#000000")
+    confirm_password_entry.pack(anchor="w", padx=(37, 0))
 
     def register_user():
         username = username_entry.get()
@@ -63,44 +72,44 @@ def signup_window():
         else:
             messagebox.showerror("Error", "Please fill in all fields")
 
-    signup_button = CTkButton(master=signup_win, text="Sign Up", fg_color="#601E88", hover_color="#E44982",
+    signup_button = CTkButton(master=signup_win, text="Sign Up", fg_color="SkyBlue4", hover_color="SteelBlue4",
                               font=("Arial", 12, "bold"), text_color="#ffffff", width=225, command=register_user).pack(anchor="w",
-                              pady=(10, 0), padx=(25, 0))
+                              pady=(20, 0), padx=(37, 0))
 
     signup_win.mainloop()
-
 
 # Login window
 def login_window():
     login_win = CTk()
+    login_win.title("Login")
     login_win.geometry("600x480")
     login_win.resizable(0, 0)
 
     CTkLabel(master=login_win, text="", image=login_bg_image).pack(expand=True, side="left")
 
     # login right frame
-    frame = CTkFrame(master=login_win, width=300, height=480, fg_color="#ffffff", bg_color="#ffffff")
+    frame = CTkFrame(master=login_win, width=300, height=480, fg_color="lavender", bg_color="mint cream", corner_radius=0)
     frame.pack_propagate(0)
     frame.pack(expand=True, side="right")
 
-    CTkLabel(master=frame, text="Welcome Back!", text_color="#601E88", anchor="w", justify="left",
-             font=("Arial", 24, "bold")).pack(anchor="w", pady=(50, 5), padx=(25, 0))
-    CTkLabel(master=frame, text="Sign in to your account", text_color="#7E7E7E", anchor="w", justify="left",
-             font=("Arial", 12, "bold")).pack(anchor="w", padx=(25, 0))
+    CTkLabel(master=frame, text="Welcome Back!", text_color="SkyBlue4", anchor="w", justify="left",
+             font=("Arial", 24, "bold")).pack(anchor="w", pady=(50, 5), padx=(37, 0))
+    CTkLabel(master=frame, text="Sign in to your account", text_color="salmon3", anchor="w", justify="left",
+             font=("Arial", 12, "bold")).pack(anchor="w", padx=(37, 0))
 
     # username label and entry
-    CTkLabel(master=frame, text="  Username", text_color="#601E88", anchor="w", justify="left", font=("Arial", 14, "bold"),
-             image=email_icon, compound="left").pack(anchor="w", pady=(38, 0), padx=(25, 0))
-    username_entry = CTkEntry(master=frame, width=225, fg_color="#EEEEEE", border_color="#601E88", border_width=2,
+    CTkLabel(master=frame, text="  Username", text_color="SkyBlue4", anchor="w", justify="left", font=("Arial", 14, "bold"),
+             image=username_icon, compound="left").pack(anchor="w", pady=(38, 0), padx=(37, 0))
+    username_entry = CTkEntry(master=frame, width=225, fg_color="#EEEEEE", border_color="SkyBlue4", border_width=2,
              text_color="#000000")
-    username_entry.pack(anchor="w", padx=(25, 0))
+    username_entry.pack(anchor="w", padx=(37, 0))
 
     # password label and entry
-    CTkLabel(master=frame, text="  Password", text_color="#601E88", anchor="w", justify="left",
-             font=("Arial", 14, "bold"), image=password_icon, compound="left").pack(anchor="w", pady=(21, 0), padx=(25, 0))
-    password_entry = CTkEntry(master=frame, width=225, fg_color="#EEEEEE", border_color="#601E88", border_width=2, text_color="#000000",
+    CTkLabel(master=frame, text="  Password", text_color="SkyBlue4", anchor="w", justify="left",
+             font=("Arial", 14, "bold"), image=password_icon, compound="left").pack(anchor="w", pady=(21, 0), padx=(37, 0))
+    password_entry = CTkEntry(master=frame, width=225, fg_color="#EEEEEE", border_color="SkyBlue4", border_width=2, text_color="#000000",
              show="*")
-    password_entry.pack(anchor="w", padx=(25, 0))
+    password_entry.pack(anchor="w", padx=(37, 0))
 
     def attempt_login():
         username = username_entry.get()
@@ -111,14 +120,14 @@ def login_window():
         else:
             messagebox.showerror("Login Failed", "Invalid username or password")
 
-    CTkButton(master=frame, text="Login", fg_color="#601E88", hover_color="#E44982", font=("Arial", 12, "bold"),
-              text_color="#ffffff", width=225, command=attempt_login).pack(anchor="w", pady=(40, 0), padx=(25, 0))
+    CTkButton(master=frame, text="Log in", fg_color="SkyBlue4", hover_color="SteelBlue4", font=("Arial", 12, "bold"),
+              text_color="#ffffff", width=225, command=attempt_login).pack(anchor="w", pady=(40, 0), padx=(37, 0))
 
-    CTkLabel(master=frame, text="Don't have an account?", text_color="#7E7E7E", anchor="w", justify="left",
-             font=("Arial", 12, "bold")).pack(anchor="w",pady=(30, 0), padx=(25, 0))
+    CTkLabel(master=frame, text="Don't have an account?", text_color="salmon3", anchor="w", justify="left",
+             font=("Arial", 12, "bold")).pack(anchor="w",pady=(30, 0), padx=(37, 0))
 
-    signup_button = CTkButton(master=frame, text="Sign Up", fg_color="#601E88", hover_color="#E44982", font=("Arial", 12, "bold"),
-              text_color="#ffffff", width=225, command=signup_window).pack(anchor="w", pady=(10, 0), padx=(25, 0))
+    signup_button = CTkButton(master=frame, text="Sign Up", fg_color="SkyBlue4", hover_color="SteelBlue4", font=("Arial", 12, "bold"),
+              text_color="#ffffff", width=225, command=signup_window).pack(anchor="w", pady=(10, 0), padx=(37, 0))
 
     login_win.mainloop()
 
@@ -196,7 +205,7 @@ def main_window(username):
     top_frame.place(x=280, y=30)
 
     # üst frame title
-    title = CTkLabel(master=top_frame, text="Welcome Back!\n Semih ", text_color="white",
+    title = CTkLabel(master=top_frame, text=f"Welcome Back!\n{username}", text_color="white",
                      font=("Century Gothic", 35, "bold"))
     title.place(x=10, y=10)
 
@@ -342,8 +351,8 @@ def main_window(username):
 
     def settings_window():
         settings_window = CTkToplevel(app)
-        settings_window.title("Settings")
         settings_window.geometry("500x500")
+        settings_window.title("Settings")
         settings_window.resizable(0, 0)
 
         new_x = app.winfo_x() + (app.winfo_width() - 500) // 2
@@ -373,9 +382,7 @@ def main_window(username):
             messagebox.showinfo("Saved Changes", "Save changes successfully")
 
         save_button = CTkButton(master=settings_window, text="Save Changes", command=save_changes)
-        save_button.pack(pady=20)
-
-
+        save_button.pack(pady=10)
 
     def add_task(task_id, task_text):
         var = IntVar()
@@ -434,7 +441,6 @@ def main_window(username):
         selected_due_date = StringVar()
         selected_due_date.set("No Date Selected")
 
-
         def save_task():
             task_name = task_entry.get()
             is_favorite = is_favorite_var.get()
@@ -449,7 +455,9 @@ def main_window(username):
         selected_date_option = StringVar(value=date_options[0])
 
         def handle_date_option(choice):
-            if choice == "Today":
+            if choice == "No Due Date":
+                selected_due_date.set("No Date Selected")
+            elif choice == "Today":
                 selected_due_date.set(datetime.today().strftime("%d.%m.%Y"))
             elif choice == "Tomorrow":
                 selected_due_date.set((datetime.today() + timedelta(days=1)).strftime("%d.%m.%Y"))
@@ -459,7 +467,13 @@ def main_window(username):
                 open_calendar()
 
         date_menu = CTkOptionMenu(new_task_window, values=date_options, command=handle_date_option, variable=selected_date_option)
-        date_menu.pack(pady=10)
+        date_menu.pack(padx=5, pady=10, anchor="w")
+
+        repeater_options = ["No Repeater", "Every Day", "Every Week", "Every Month"]
+        selected_repeater_option = StringVar(value=repeater_options[0])
+
+        repeater_menu = CTkOptionMenu(new_task_window, values=repeater_options)
+        repeater_menu.pack(padx=5, pady=10, anchor="e")
 
         selected_date_label = CTkLabel(master=new_task_window, textvariable=selected_due_date)
         selected_date_label.pack(pady=5)
@@ -541,6 +555,19 @@ def main_window(username):
 
         CTkButton(master=remove_window, text="Remove Selected Tasks", command=remove_selected_tasks).pack(pady=10)
 
+    # günlük tamamlanmış görevleri silme
+    def schedule_task_removal():
+        now = datetime.now()
+        next_day = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        delay = (next_day - now).total_seconds()
+        threading.Timer(delay, task_removal_wrapper).start()
+
+    def task_removal_wrapper():
+        database.remove_completed_tasks()
+        schedule_task_removal()
+
+
+    schedule_task_removal()
     refresh_task_list()
     update_task_status()
     app.mainloop()
