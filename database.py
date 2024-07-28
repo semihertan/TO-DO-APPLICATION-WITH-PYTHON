@@ -17,6 +17,8 @@ def initialize_db():
                       status TEXT NOT NULL,
                       is_favorite INTEGER default 0,
                       due_date TEXT,
+                      past_due_task TEXT,
+                      repeat_interval TEXT,
                       FOREIGN KEY (user_id) REFERENCES users(id))''')
     conn.commit()
     conn.close()
@@ -89,6 +91,13 @@ def remove_task_from_db(task_id):
     conn.commit()
     conn.close()
 
+def remove_completed_tasks():
+    conn = sqlite3.connect("user_data.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM tasks WHERE status = ?", (1,))
+    conn.commit()
+    conn.close()
+
 def update_task_status_in_db(task_id, status):
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
@@ -112,6 +121,20 @@ def get_past_due_tasks(user_id):
     past_due_tasks = cursor.fetchall()
     conn.close()
     return past_due_tasks
+
+def remove_past_due_tasks(user_id):
+    conn = sqlite3.connect("user_data.db")
+    cursor = conn.cursor()
+    now = datetime.now().strftime('%d.%m.%Y')
+    cursor.execute("SELECT id FROM tasks WHERE user_id = ? AND due_date < ?", (user_id, now))
+    removed_past_due_tasks = cursor.fetchall()
+
+    for task_id in removed_past_due_tasks:
+        cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id[0],))
+
+    conn.commit()
+    conn.close()
+
 
 def check_reminders_and_notify():
     conn = sqlite3.connect("user_data.db")
