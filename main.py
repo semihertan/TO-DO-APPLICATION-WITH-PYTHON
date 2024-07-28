@@ -140,6 +140,8 @@ def main_window(username):
     global task_list
     user_id = database.get_user_id(username)
     task_list = database.get_tasks_from_db(user_id)
+    past_due_tasks = database.get_past_due_tasks(user_id)
+    database.remove_past_due_tasks(user_id)
 
     app = CTk()
     app.title("ERTAN")
@@ -279,7 +281,7 @@ def main_window(username):
     pygame.mixer.music.load(r"C:\Users\semih\PycharmProjects\TO-DO LIST APP\success_bell-6776.mp3")
 
 
-    user_id = database.get_user_id(username)
+
     tasks = database.get_tasks_from_db(user_id)
     # getting user id and user tasks from db
     for task_id, task_text, task_status, is_favorite, due_date in tasks:
@@ -327,6 +329,7 @@ def main_window(username):
         cal.pack(pady=90)
 
 
+
     def notifications_window():
         notifications_window = CTkToplevel(app)
         notifications_window.geometry("500x500")
@@ -343,7 +346,6 @@ def main_window(username):
         past_tasks_frame = CTkScrollableFrame(master=notifications_window, width=400, height=300)
         past_tasks_frame.pack(pady=10)
 
-        past_due_tasks = database.get_past_due_tasks(user_id)
         for task in past_due_tasks:
             task_name, due_date = task
             task_label = CTkLabel(master=past_tasks_frame, text=f"{task_name}   {due_date}", text_color="red")
