@@ -1,6 +1,6 @@
 from tkinter import StringVar
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from plyer import notification
 import time
 def initialize_db():
@@ -17,7 +17,6 @@ def initialize_db():
                       status TEXT NOT NULL,
                       is_favorite INTEGER default 0,
                       due_date TEXT,
-                      past_due_task TEXT,
                       repeat_interval TEXT,
                       FOREIGN KEY (user_id) REFERENCES users(id))''')
     conn.commit()
@@ -67,19 +66,19 @@ def check_credentials(username, password):
     conn.close()
     return result
 
-def add_task_to_db(user_id, task, is_favorite, due_date):
+def add_task_to_db(user_id, task, is_favorite, due_date, repeat_interval=None):
     due_date_str = due_date.get() if isinstance(due_date, StringVar) else due_date
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO tasks (user_id, task, status, is_favorite, due_date) VALUES (?, ?, ?, ?, ?)",
-                   (user_id, task, 0, is_favorite, due_date_str))
+    cursor.execute("INSERT INTO tasks (user_id, task, status, is_favorite, due_date, repeat_interval) VALUES (?, ?, ?, ?, ?, ?)",
+                   (user_id, task, 0, is_favorite, due_date_str, repeat_interval))
     conn.commit()
     conn.close()
 
 def get_tasks_from_db(user_id):
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT id, task, status, is_favorite, due_date FROM tasks WHERE user_id = ?", (user_id,))
+    cursor.execute("SELECT id, task, status, is_favorite, due_date, repeat_interval FROM tasks WHERE user_id = ?", (user_id,))
     tasks = cursor.fetchall()
     conn.close()
     return tasks
@@ -134,6 +133,32 @@ def remove_past_due_tasks(user_id):
 
     conn.commit()
     conn.close()
+
+
+def repeat_tasks():
+    conn = sqlite3.connect("user_data.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, user_id, task, is_favorite, due_date, repeat_interval FROM tasks")
+    tasks = cursor.fetchall()
+    today = datetime.now().strftime('%d.%m.%Y')
+
+    for task_id, user_id, task, is_favorite, due_date, repeat_interval in tasks:
+        if repeat_interval and due_date and due_date != "No Date Selected":
+            due_date_dt = datetime.strptime(due_date, '%d.%m.%Y')
+            next_due_date = None
+            if repeat_interval == "Every Day":
+                next_due_date = due_date_dt + timedelta(days=1)
+            elif repeat_interval == "Every Week":
+                next_due_date = due_date_dt + timedelta(weeks=1)
+            pass
+
+            if next_due_date and next_due_date.strftime("%d.%m.%Y") == today:
+                cursor.execute("INSERT INTO tasks(user_id, task, status, is_favorite, due_date, repeat_interval) VALUES (?, ?, ?, ?, ?, ?)"
+                               ,(user_id, task, 0, is_favorite, next_due_date.strftime("%d.%m.%Y"), repeat_interval))
+
+    conn.commit()
+    conn.close()
+
 
 
 def check_reminders_and_notify():
