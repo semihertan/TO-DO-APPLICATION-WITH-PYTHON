@@ -143,6 +143,7 @@ def main_window(username):
     past_due_tasks = database.get_past_due_tasks(user_id)
     database.remove_past_due_tasks(user_id)
 
+
     app = CTk()
     app.title("ERTAN")
     app.geometry("900x650")
@@ -168,10 +169,15 @@ def main_window(username):
               hover_color="#121424", anchor="w").pack(anchor="center", ipady=5, pady=(60, 0))
 
     # notifications button
+    notification_number_var = StringVar()
+    notification_number_var.set(f"{len(past_due_tasks)}")
     list_img_data = Image.open("list_icon.png")
     list_img = CTkImage(dark_image=list_img_data, light_image=list_img_data)
     CTkButton(master=left_frame, image=list_img, text="Notifications", fg_color="transparent", font=("Arial Bold", 14),
               hover_color="#121424", anchor="w", command=lambda: notifications_window()).pack(anchor="center", ipady=5, pady=(16, 0))
+
+    notification_number_label = CTkLabel(master=left_frame, textvariable=notification_number_var, fg_color="black", font=("Arial", 14))
+    notification_number_label.place(x=25, y=255)
 
     # calendar button
     returns_img_data = Image.open("calendar_icon.png")
@@ -284,7 +290,7 @@ def main_window(username):
 
     tasks = database.get_tasks_from_db(user_id)
     # getting user id and user tasks from db
-    for task_id, task_text, task_status, is_favorite, due_date in tasks:
+    for task_id, task_text, task_status, is_favorite, due_date, repeat_interval in tasks:
         var = IntVar(value=task_status)
         checkbox = CTkCheckBox(master=checkbox_frame, text=task_text, variable=var, command=lambda: database.update_task_status_in_db(task_id, var.get()))
         checkbox.pack(anchor="w", padx=10, pady=5)
@@ -327,7 +333,6 @@ def main_window(username):
         today = datetime.today()
         cal = Calendar(calendar_window, selectmode='day', year=today.year, month=today.month, day=today.day)
         cal.pack(pady=90)
-
 
 
     def notifications_window():
@@ -446,8 +451,9 @@ def main_window(username):
         def save_task():
             task_name = task_entry.get()
             is_favorite = is_favorite_var.get()
+            repeat_interval = selected_repeater_option.get()
             if task_name:
-                task_id = database.add_task_to_db(user_id, task_name, is_favorite, selected_due_date)
+                task_id = database.add_task_to_db(user_id, task_name, is_favorite, selected_due_date, repeat_interval)
                 add_task(task_id, task_name)
                 refresh_task_list()
                 update_task_status()
@@ -471,7 +477,7 @@ def main_window(username):
         date_menu = CTkOptionMenu(new_task_window, values=date_options, command=handle_date_option, variable=selected_date_option)
         date_menu.pack(padx=5, pady=10, anchor="w")
 
-        repeater_options = ["No Repeater", "Every Day", "Every Week", "Every Month"]
+        repeater_options = ["No Repeater", "Every Day", "Every Week"]
         selected_repeater_option = StringVar(value=repeater_options[0])
 
         repeater_menu = CTkOptionMenu(new_task_window, values=repeater_options)
@@ -504,7 +510,7 @@ def main_window(username):
         if criteria:
             task_list = sort_tasks(task_list, criteria)
 
-        for task_id, task_text, task_status, is_favorite, selected_due_date in task_list:
+        for task_id, task_text, task_status, is_favorite, selected_due_date, repeat_interval in task_list:
             display_text = f"{task_text} {selected_due_date}" if selected_due_date != "No Date Selected" else f"{task_text}"
             if is_favorite:
                 display_text += "   ★"
@@ -533,7 +539,7 @@ def main_window(username):
         remove_frame.pack(pady=10)
 
         remove_vars = []
-        for task_id, task_text, task_status, is_favorite, due_date in task_list:
+        for task_id, task_text, task_status, is_favorite, due_date, repeat_interval in task_list:
             var = IntVar()
             if is_favorite:
                 task_text += " ★"
@@ -560,12 +566,13 @@ def main_window(username):
     # günlük tamamlanmış görevleri silme
     def schedule_task_removal():
         now = datetime.now()
-        next_day = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-        delay = (next_day - now).total_seconds()
+        next_time = (now + timedelta(minutes=2)).replace(second=0, microsecond=0)
+        delay = (next_time - now).total_seconds()
         threading.Timer(delay, task_removal_wrapper).start()
 
     def task_removal_wrapper():
         database.remove_completed_tasks()
+        database.repeat_tasks()
         schedule_task_removal()
 
 
