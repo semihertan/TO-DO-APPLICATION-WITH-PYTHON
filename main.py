@@ -146,7 +146,7 @@ def main_window(username):
 
     app = CTk()
     app.title("ERTAN")
-    app.geometry("900x650")
+    app.geometry("1000x650")
     app.resizable(0, 0)
     set_appearance_mode("dark")
 
@@ -198,52 +198,54 @@ def main_window(username):
               hover_color="#121424", anchor="w", command=lambda: settings_window()).pack(anchor="center", ipady=5, pady=(16, 0))
 
     # sağ arkaplan
-    right_bg_image_data = Image.open("tp238-background-03 (1) (2).jpg")
-    right_bg_image = CTkImage(dark_image=right_bg_image_data, light_image=right_bg_image_data, size=(685, 650))
+    right_bg_image_data = Image.open("and Sparkle! (1).png")
+    right_bg_image = CTkImage(dark_image=right_bg_image_data, light_image=right_bg_image_data, size=(785, 650))
 
-    right_frame = CTkFrame(master=app, fg_color="transparent", width=685, height=650, corner_radius=0)
+    right_frame = CTkFrame(master=app, fg_color="transparent", width=785, height=650, corner_radius=0)
     right_frame.pack_propagate(0)
     right_frame.place(x=215, y=0)
 
     CTkLabel(master=right_frame, text="", image=right_bg_image).place(x=0, y=0)
 
-    # üst_frame
-    top_frame = CTkFrame(master=app, fg_color="black", bg_color="black", width=300, height=100, corner_radius=0)
-    top_frame.pack_propagate(0)
-    top_frame.place(x=280, y=30)
 
-    # üst frame title
-    title = CTkLabel(master=top_frame, text=f"Welcome Back!\n{username}", text_color="white",
-                     font=("Century Gothic", 35, "bold"))
-    title.place(x=10, y=10)
+
+    # buttons main frame
+    buttons_frame = CTkFrame(master=app, corner_radius=0, fg_color="black", bg_color="black", width=260, height=50)
+    buttons_frame.place(x=490, y=305)
 
     # Görev ekle butonu
     add_img = Image.open("add-circle-svgrepo-com (1).png").convert("RGBA")
     add_img = add_img.resize((40, 40))
     add_ctk_image = CTkImage(dark_image=add_img, light_image=add_img)
 
-    add_button = CTkButton(master=app, text="Add Task", corner_radius=12, command=lambda: add_task_window(),
+    add_button = CTkButton(master=buttons_frame, text="", corner_radius=12, width=10, height=30, command=lambda: add_task_window(),
                            image=add_ctk_image)
-    add_button.place(x=360, y=220)
+    add_button.place(x=10, y=10)
 
     # Görev silme butonu
     remove_img = Image.open("trash-svgrepo-com (1).png").convert("RGBA")
     remove_img = remove_img.resize((40, 40))
     remove_ctk_image = CTkImage(dark_image=remove_img, light_image=remove_img)
 
-    remove_button = CTkButton(master=app, text="Remove Task", corner_radius=12, command=lambda: remove_task_window(),
+    remove_button = CTkButton(master=buttons_frame, text="", corner_radius=12, width=10, height=30, command=lambda: remove_task_window(),
                               image=remove_ctk_image)
-    remove_button.place(x=360, y=270)
+    remove_button.place(x=60, y=10)
+
+    # sorting filter option menu
+    sort_menu = CTkOptionMenu(master=buttons_frame,
+                              values=["Sort by Favorite", "Sort by Due Date", "Sort Alphabetically"],
+                              command=lambda criteria: refresh_task_list(criteria))
+    sort_menu.place(x=110, y=10)
 
     # Görev çerçevesi
-    checkbox_frame = CTkScrollableFrame(master=app, fg_color="black", border_color="white", border_width=2, width=500, height=200,
+    checkbox_frame = CTkScrollableFrame(master=app, fg_color="black", bg_color="black", width=450, height=245,
                                         corner_radius=5)
-    checkbox_frame.place(x=280, y=400)
+    checkbox_frame.place(x=230, y=350)
 
     # Yapılan iş kalan iş çerçevesi
-    task_status_frame = CTkFrame(master=app, border_color="MediumPurple3", border_width=1, width=300, height=100,
+    task_status_frame = CTkFrame(master=app, fg_color="black", border_color="MediumPurple3", border_width=1, width=200, height=100,
                                  corner_radius=4)
-    task_status_frame.place(x=570, y=140)
+    task_status_frame.place(x=720, y=350)
 
     # Tik işareti ikonu
     tik_image_data = Image.open("checked-svgrepo-com.png")
@@ -261,9 +263,9 @@ def main_window(username):
     tasks_remaining_label.place(x=70, y=60)
 
     # Success frame
-    success_frame = CTkFrame(master=app, border_color="DeepSkyBlue2", border_width=1, width=300, height=100,
+    success_frame = CTkFrame(master=app, fg_color="black", border_color="MediumPurple3", border_width=1, width=200, height=100,
                              corner_radius=4)
-    success_frame.place(x=570, y=260)
+    success_frame.place(x=720, y=480)
 
     # Success ikonu
     success_image_data = Image.open("success.png")
@@ -277,10 +279,7 @@ def main_window(username):
     success_percentage_value_label = CTkLabel(master=success_frame, text="0%", font=("Arial", 30))
     success_percentage_value_label.place(x=142, y=50)
 
-    # sorting filter option menu
-    sort_menu = CTkOptionMenu(master=app, values=["Sort by Favorite", "Sort by Due Date", "Sort Alphabetically"],
-                              command=lambda criteria: refresh_task_list(criteria))
-    sort_menu.place(x=280, y=370)
+
 
     # sound effect loading
     pygame.mixer.init()
@@ -290,7 +289,7 @@ def main_window(username):
 
     tasks = database.get_tasks_from_db(user_id)
     # getting user id and user tasks from db
-    for task_id, task_text, task_status, is_favorite, due_date, repeat_interval in tasks:
+    for task_id, task_text, task_status, is_favorite, due_date, repeat_interval, reminder_time in tasks:
         var = IntVar(value=task_status)
         checkbox = CTkCheckBox(master=checkbox_frame, text=task_text, variable=var, command=lambda: database.update_task_status_in_db(task_id, var.get()))
         checkbox.pack(anchor="w", padx=10, pady=5)
@@ -348,7 +347,10 @@ def main_window(username):
         notifications_window.transient(app)
         notifications_window.grab_set()
 
-        past_tasks_frame = CTkScrollableFrame(master=notifications_window, width=400, height=300)
+        past_tasks_label = CTkLabel(master=notifications_window, text="You have overdue tasks", font=("Arial", 30, "bold"))
+        past_tasks_label.pack(padx=25, pady=20, anchor="w")
+
+        past_tasks_frame = CTkScrollableFrame(master=notifications_window, width=300, height=200)
         past_tasks_frame.pack(pady=10)
 
         for task in past_due_tasks:
@@ -399,28 +401,40 @@ def main_window(username):
         checkboxes.append((task_id, var))
         update_task_status()
 
+
     def add_task_window():
         new_task_window = CTkToplevel(app)
         new_task_window.title("Add Task")
-        new_task_window.geometry("300x200")
+        new_task_window.geometry("600x600")
         new_task_window.resizable(0, 0)
 
-        new_x = app.winfo_x() + (app.winfo_width() - 300) // 2
-        new_y = app.winfo_y() + (app.winfo_height() - 200) // 2
+        new_x = app.winfo_x() + (app.winfo_width() - 600) // 2
+        new_y = app.winfo_y() + (app.winfo_height() - 600) // 2
 
-        new_task_window.geometry(f"300x350+{new_x}+{new_y}")
+        new_task_window.geometry(f"600x600+{new_x}+{new_y}")
         new_task_window.transient(app)
         new_task_window.grab_set()
 
-        task_label = CTkLabel(master=new_task_window, text="Task Name:", font=("Arial", 14))
-        task_label.pack(pady=10)
+        add_top_label = CTkLabel(master=new_task_window, text="Add Task", font=("Arial", 30, "bold"))
+        add_top_label.pack(padx=50 , pady=2, anchor="w")
 
-        task_entry = CTkEntry(master=new_task_window, placeholder_text="Enter a task...", width=250)
-        task_entry.pack(pady=5)
+        add_top_frame = CTkFrame(master=new_task_window, width=500, height=80)
+        add_top_frame.pack(pady=10)
+
+        task_entry = CTkEntry(master=add_top_frame, placeholder_text="Enter a task...", width=300)
+        task_entry.place(x=20, y=25)
+
 
         is_favorite_var = IntVar(value=0)
-        CTkRadioButton(master=new_task_window, text="Add To Favorites", variable=is_favorite_var, value=1).pack(pady=5)
-        CTkRadioButton(master=new_task_window, text="Normal", variable=is_favorite_var, value=0).pack(pady=5)
+        normal_star_image_data = Image.open("normal_star.png")
+        favorite_image_data = Image.open("favorite_star.png")
+        normal_star_image = CTkImage(dark_image=normal_star_image_data, light_image=normal_star_image_data, size=(20, 20))
+        favorite_star_image = CTkImage(dark_image=favorite_image_data, light_image=favorite_image_data, size=(20, 20))
+        CTkLabel(master=add_top_frame, text="", image=normal_star_image).place(x=465, y=7)
+        CTkLabel(master=add_top_frame, text="", image=favorite_star_image).place(x=465, y=42)
+
+        CTkRadioButton(master=add_top_frame, text="Normal", variable=is_favorite_var, value=0).place(x=340, y=10)
+        CTkRadioButton(master=add_top_frame, text="Add to favorites", variable=is_favorite_var, value=1).place(x=340, y=45)
 
         def open_calendar():
             calendar_window = CTkToplevel(app)
@@ -452,8 +466,18 @@ def main_window(username):
             task_name = task_entry.get()
             is_favorite = is_favorite_var.get()
             repeat_interval = selected_repeater_option.get()
+            due_date = selected_due_date.get()
+            reminder_time = selected_reminder_option.get()
+
             if task_name:
-                task_id = database.add_task_to_db(user_id, task_name, is_favorite, selected_due_date, repeat_interval)
+                if reminder_time.startswith("Today"):
+                    reminder_time = (datetime.now() + timedelta(minutes=2)).replace(second=0, microsecond=0).strftime("%d.%m.%Y %H:%M:%S")
+                elif reminder_time.startswith("Tomorrow"):
+                    reminder_time = (datetime.now() + timedelta(days=1)).replace(hour=3, minute=0, second=0, microsecond=0).strftime("%d.%m.%Y %H:%M:%S")
+                else:
+                    reminder_time = ""
+
+                task_id = database.add_task_to_db(user_id, task_name, is_favorite, due_date, repeat_interval, reminder_time)
                 add_task(task_id, task_name)
                 refresh_task_list()
                 update_task_status()
@@ -474,21 +498,42 @@ def main_window(username):
             elif choice == "Pick a Date":
                 open_calendar()
 
-        date_menu = CTkOptionMenu(new_task_window, values=date_options, command=handle_date_option, variable=selected_date_option)
-        date_menu.pack(padx=5, pady=10, anchor="w")
+        options_frame = CTkFrame(master=new_task_window, width=500, height=70)
+        options_frame.pack(pady=10)
+
+        date_menu = CTkOptionMenu(options_frame, values=date_options, command=handle_date_option,
+                                  variable=selected_date_option)
+        date_menu.place(x=20, y=20)
 
         repeater_options = ["No Repeater", "Every Day", "Every Week"]
         selected_repeater_option = StringVar(value=repeater_options[0])
 
-        repeater_menu = CTkOptionMenu(new_task_window, values=repeater_options)
-        repeater_menu.pack(padx=5, pady=10, anchor="e")
+        repeater_menu = CTkOptionMenu(options_frame, values=repeater_options, variable=selected_repeater_option)
+        repeater_menu.place(x=180, y=20)
+
+        # reminder button functions
+        now = datetime.now()
+        three_hours_later = now + timedelta(minutes=2)
+        three_hours_later = three_hours_later.replace(second=0, microsecond=0)
+        today_option = three_hours_later.strftime("Today %H:%M")
+
+        tomorrow = now + timedelta(days=1)
+        tomorrow_morning = tomorrow.replace(hour=9, minute=0, second=0, microsecond=0)
+        tomorrow_option = tomorrow_morning.strftime("Tomorrow %H:%M")
+
+        next_week_option = (tomorrow_morning + timedelta(weeks=1)).strftime("Next Week %H:%M")
+
+        reminder_options = ["No Reminder", today_option, tomorrow_option, next_week_option]
+        selected_reminder_option = StringVar(value=reminder_options[0])
+
+        reminder_menu = CTkOptionMenu(options_frame, values=reminder_options, variable=selected_reminder_option)
+        reminder_menu.place(x=340, y=20)
 
         selected_date_label = CTkLabel(master=new_task_window, textvariable=selected_due_date)
         selected_date_label.pack(pady=5)
 
         save_button = CTkButton(master=new_task_window, text="Save Task", command=save_task)
         save_button.pack(pady=20)
-
 
     def sort_tasks(tasks, criteria):
         if criteria == "Sort by Favorite":
@@ -510,7 +555,7 @@ def main_window(username):
         if criteria:
             task_list = sort_tasks(task_list, criteria)
 
-        for task_id, task_text, task_status, is_favorite, selected_due_date, repeat_interval in task_list:
+        for task_id, task_text, task_status, is_favorite, selected_due_date, repeat_interval, reminder_time in task_list:
             display_text = f"{task_text} {selected_due_date}" if selected_due_date != "No Date Selected" else f"{task_text}"
             if is_favorite:
                 display_text += "   ★"
@@ -539,7 +584,7 @@ def main_window(username):
         remove_frame.pack(pady=10)
 
         remove_vars = []
-        for task_id, task_text, task_status, is_favorite, due_date, repeat_interval in task_list:
+        for task_id, task_text, task_status, is_favorite, due_date, repeat_interval, reminder_time in task_list:
             var = IntVar()
             if is_favorite:
                 task_text += " ★"
@@ -571,11 +616,17 @@ def main_window(username):
         threading.Timer(delay, task_removal_wrapper).start()
 
     def task_removal_wrapper():
-        database.remove_completed_tasks()
         database.repeat_tasks()
+        database.remove_completed_tasks()
         schedule_task_removal()
 
 
+
+    def schedule_reminder_check():
+        database.check_reminders_and_notify()
+        app.after(60000, schedule_reminder_check)
+
+    schedule_reminder_check()
     schedule_task_removal()
     refresh_task_list()
     update_task_status()
