@@ -156,17 +156,16 @@ def main_window(username):
     left_frame.pack(fill="y", anchor="w", side="left")
 
     # logo ikonu
-    logo_img_data = Image.open("resim_2024-07-17_170423158.png")
-    logo_img = CTkImage(dark_image=logo_img_data, light_image=logo_img_data, size=(90, 100))
+    logo_img_data = Image.open("logo.jpeg")
+    logo_img = CTkImage(dark_image=logo_img_data, light_image=logo_img_data, size=(165, 155))
 
-    CTkLabel(master=left_frame, text="", image=logo_img).pack(pady=(38, 0), anchor="center")
+    CTkLabel(master=left_frame, text="", image=logo_img).pack(pady=(0, 0), anchor="center")
 
-    # analitik butonu
-    analytics_img_data = Image.open("analytics_icon.png")
-    analytics_img = CTkImage(dark_image=analytics_img_data, light_image=analytics_img_data)
-
-    CTkButton(master=left_frame, image=analytics_img, text="Dashboard", fg_color="transparent", font=("Arial Bold", 14),
-              hover_color="#121424", anchor="w").pack(anchor="center", ipady=5, pady=(60, 0))
+    # hesap butonu
+    person_img_data = Image.open("person_icon.png")
+    person_img = CTkImage(dark_image=person_img_data, light_image=person_img_data)
+    CTkButton(master=left_frame, image=person_img, text="Account", fg_color="transparent", font=("Arial Bold", 14),
+              hover_color="#121424", anchor="w").pack(anchor="center", ipady=5, pady=(100, 0))
 
     # notifications button
     notification_number_var = StringVar()
@@ -185,17 +184,13 @@ def main_window(username):
     CTkButton(master=left_frame, image=returns_img, text="Calendar", fg_color="transparent", font=("Arial Bold", 14),
               hover_color="#121424", anchor="w", command=lambda: open_calendar_window()).pack(anchor="center", ipady=5,
                                                                                               pady=(16, 0))
-    # hesap butonu
-    person_img_data = Image.open("person_icon.png")
-    person_img = CTkImage(dark_image=person_img_data, light_image=person_img_data)
-    CTkButton(master=left_frame, image=person_img, text="Account", fg_color="transparent", font=("Arial Bold", 14),
-              hover_color="#121424", anchor="w").pack(anchor="center", ipady=5, pady=(160, 0))
+
 
     # ayarlar butonu
     settings_img_data = Image.open("settings.png")
     settings_img = CTkImage(dark_image=settings_img_data, light_image=settings_img_data)
     CTkButton(master=left_frame, image=settings_img, text="Settings", fg_color="transparent", font=("Arial Bold", 14),
-              hover_color="#121424", anchor="w", command=lambda: settings_window()).pack(anchor="center", ipady=5, pady=(16, 0))
+              hover_color="#121424", anchor="w", command=lambda: settings_window()).pack(anchor="center", ipady=5, pady=(159, 0))
 
     # sağ arkaplan
     right_bg_image_data = Image.open("and Sparkle! (1).png")
@@ -211,73 +206,70 @@ def main_window(username):
 
     # buttons main frame
     buttons_frame = CTkFrame(master=app, corner_radius=0, fg_color="black", bg_color="black", width=260, height=50)
-    buttons_frame.place(x=490, y=305)
+    buttons_frame.place(x=720, y=305)
 
     # Görev ekle butonu
-    add_img = Image.open("add-circle-svgrepo-com (1).png").convert("RGBA")
+    add_img = Image.open("add_icon.png").convert("RGBA")
     add_img = add_img.resize((40, 40))
     add_ctk_image = CTkImage(dark_image=add_img, light_image=add_img)
 
-    add_button = CTkButton(master=buttons_frame, text="", corner_radius=12, width=10, height=30, command=lambda: add_task_window(),
+    add_button = CTkButton(master=buttons_frame, text="", corner_radius=10, width=10, height=30, command=lambda: add_task_window(),
                            image=add_ctk_image)
-    add_button.place(x=10, y=10)
+    add_button.place(x=0, y=10)
 
     # Görev silme butonu
     remove_img = Image.open("trash-svgrepo-com (1).png").convert("RGBA")
     remove_img = remove_img.resize((40, 40))
     remove_ctk_image = CTkImage(dark_image=remove_img, light_image=remove_img)
 
-    remove_button = CTkButton(master=buttons_frame, text="", corner_radius=12, width=10, height=30, command=lambda: remove_task_window(),
+    remove_button = CTkButton(master=buttons_frame, text="", corner_radius=10, width=10, height=30, command=lambda: remove_task_window(),
                               image=remove_ctk_image)
-    remove_button.place(x=60, y=10)
+    remove_button.place(x=50, y=10)
 
     # sorting filter option menu
-    sort_menu = CTkOptionMenu(master=buttons_frame,
+    sort_menu = CTkOptionMenu(master=buttons_frame, width=150, height=31,
                               values=["Sort by Favorite", "Sort by Due Date", "Sort Alphabetically"],
                               command=lambda criteria: refresh_task_list(criteria))
-    sort_menu.place(x=110, y=10)
+    sort_menu.place(x=100, y=10)
 
     # Görev çerçevesi
     checkbox_frame = CTkScrollableFrame(master=app, fg_color="black", bg_color="black", width=450, height=245,
                                         corner_radius=5)
-    checkbox_frame.place(x=230, y=350)
+    checkbox_frame.place(x=500, y=350)
 
     # Yapılan iş kalan iş çerçevesi
     task_status_frame = CTkFrame(master=app, fg_color="black", border_color="MediumPurple3", border_width=1, width=200, height=100,
-                                 corner_radius=4)
-    task_status_frame.place(x=720, y=350)
+                                 corner_radius=5)
+    task_status_frame.place(x=230, y=350)
 
     # Tik işareti ikonu
-    tik_image_data = Image.open("checked-svgrepo-com.png")
+    tik_image_data = Image.open("status_icon.png")
     tik_image = CTkImage(dark_image=tik_image_data, light_image=tik_image_data, size=(45, 45))
     CTkLabel(master=task_status_frame, image=tik_image, text="").place(x=10, y=26)
 
     # Task status yazısı
-    task_status_label = CTkLabel(master=task_status_frame, text="Task Status", font=("Arial Black", 18))
+    task_status_label = CTkLabel(master=task_status_frame, text="Task Status", font=("Arial", 15, "bold"))
     task_status_label.place(x=70, y=10)
 
-    tasks_done_label = CTkLabel(master=task_status_frame, text="Tasks Done: 0", font=("Arial", 12))
+    tasks_done_label = CTkLabel(master=task_status_frame, text="Tasks Done: 0", font=("Arial", 11))
     tasks_done_label.place(x=70, y=35)
 
-    tasks_remaining_label = CTkLabel(master=task_status_frame, text="Tasks Remaining: 0", font=("Arial", 12))
+    tasks_remaining_label = CTkLabel(master=task_status_frame, text="Tasks Remaining: 0", font=("Arial", 11))
     tasks_remaining_label.place(x=70, y=60)
 
     # Success frame
     success_frame = CTkFrame(master=app, fg_color="black", border_color="MediumPurple3", border_width=1, width=200, height=100,
-                             corner_radius=4)
-    success_frame.place(x=720, y=480)
+                             corner_radius=5)
+    success_frame.place(x=230, y=480)
 
     # Success ikonu
     success_image_data = Image.open("success.png")
     success_image = CTkImage(dark_image=success_image_data, light_image=success_image_data, size=(55, 55))
-    CTkLabel(master=success_frame, image=success_image, text="").place(x=10, y=26)
+    CTkLabel(master=success_frame, image=success_image, text="").place(x=15, y=22)
 
-    # Success label
-    success_percentage_label = CTkLabel(master=success_frame, text="Success Percentage", font=("Arial Black", 18))
-    success_percentage_label.place(x=70, y=10)
     # Success percentage value label
     success_percentage_value_label = CTkLabel(master=success_frame, text="0%", font=("Arial", 30))
-    success_percentage_value_label.place(x=142, y=50)
+    success_percentage_value_label.place(x=107, y=33)
 
 
 
@@ -405,13 +397,13 @@ def main_window(username):
     def add_task_window():
         new_task_window = CTkToplevel(app)
         new_task_window.title("Add Task")
-        new_task_window.geometry("600x600")
+        new_task_window.geometry("600x350")
         new_task_window.resizable(0, 0)
 
         new_x = app.winfo_x() + (app.winfo_width() - 600) // 2
-        new_y = app.winfo_y() + (app.winfo_height() - 600) // 2
+        new_y = app.winfo_y() + (app.winfo_height() - 350) // 2
 
-        new_task_window.geometry(f"600x600+{new_x}+{new_y}")
+        new_task_window.geometry(f"600x350+{new_x}+{new_y}")
         new_task_window.transient(app)
         new_task_window.grab_set()
 
