@@ -161,6 +161,8 @@ def main_window(username):
 
     CTkLabel(master=left_frame, text="", image=logo_img).pack(pady=(0, 0), anchor="center")
 
+    CTkLabel(master=left_frame, text=f"Welcome Back\n{username}", font=("LeagueSpartan", 12, "bold")).pack(pady=(5, 0))
+
     # hesap butonu
     person_img_data = Image.open("person_icon.png")
     person_img = CTkImage(dark_image=person_img_data, light_image=person_img_data)
@@ -233,9 +235,9 @@ def main_window(username):
     sort_menu.place(x=100, y=10)
 
     # Görev çerçevesi
-    checkbox_frame = CTkScrollableFrame(master=app, fg_color="black", bg_color="black", width=450, height=245,
+    checkbox_frame = CTkScrollableFrame(master=app, fg_color="black", bg_color="black", width=480, height=245,
                                         corner_radius=5)
-    checkbox_frame.place(x=500, y=350)
+    checkbox_frame.place(x=470, y=350)
 
     # Yapılan iş kalan iş çerçevesi
     task_status_frame = CTkFrame(master=app, fg_color="black", border_color="MediumPurple3", border_width=1, width=200, height=100,
@@ -271,6 +273,7 @@ def main_window(username):
     success_percentage_value_label = CTkLabel(master=success_frame, text="0%", font=("Arial", 30))
     success_percentage_value_label.place(x=107, y=33)
 
+    CTkLabel(master=app, text="developed by SEMIH ERTAN", text_color="gray25", fg_color="black", font=("LeagueSpartan", 6, "bold")).place(x=911, y=630)
 
 
     # sound effect loading
@@ -413,9 +416,15 @@ def main_window(username):
         add_top_frame = CTkFrame(master=new_task_window, width=500, height=80)
         add_top_frame.pack(pady=10)
 
+        # Karakter sınırı için kontrol fonksiyonu
+        def limit_text_length(text):
+            if len(text) > 40:
+                task_entry.delete(40, 'end')
+
         task_entry = CTkEntry(master=add_top_frame, placeholder_text="Enter a task...", width=300)
         task_entry.place(x=20, y=25)
 
+        task_entry.bind("<KeyRelease>", lambda event: limit_text_length(task_entry.get()))
 
         is_favorite_var = IntVar(value=0)
         normal_star_image_data = Image.open("normal_star.png")
@@ -468,7 +477,9 @@ def main_window(username):
                     reminder_time = (datetime.now() + timedelta(days=1)).replace(hour=3, minute=0, second=0, microsecond=0).strftime("%d.%m.%Y %H:%M:%S")
                 else:
                     reminder_time = ""
-
+                if repeat_interval != "No Repeater" and due_date == "No Date Selected":
+                    messagebox.showerror("Error", "You have to choose due date for your repeated task")
+                    return
                 task_id = database.add_task_to_db(user_id, task_name, is_favorite, due_date, repeat_interval, reminder_time)
                 add_task(task_id, task_name)
                 refresh_task_list()
@@ -548,11 +559,31 @@ def main_window(username):
             task_list = sort_tasks(task_list, criteria)
 
         for task_id, task_text, task_status, is_favorite, selected_due_date, repeat_interval, reminder_time in task_list:
-            display_text = f"{task_text} {selected_due_date}" if selected_due_date != "No Date Selected" else f"{task_text}"
+            total_length = 55
+            task_text_length = len(task_text)
+            display_text = task_text
+
+            if repeat_interval:
+                repeater_length = len(repeat_interval)
+                repeater_text = repeat_interval
+
             if is_favorite:
-                display_text += "   ★"
+                display_text += " ★"
+                total_length = 52
+            space = total_length - task_text_length - repeater_length
+
+            for i in range(space):
+                display_text += " "
+
+
+
+            if selected_due_date != "No Date Selected":
+                display_text += f"{repeater_text}  {selected_due_date}"
+
+
+
             var = IntVar(value=task_status)
-            checkbox = CTkCheckBox(master=checkbox_frame, text=display_text, variable=var, command=update_task_status)
+            checkbox = CTkCheckBox(master=checkbox_frame, text=display_text, variable=var, font=("JetBrains Mono", 11, "bold"), command=update_task_status)
             checkbox.pack(anchor="w", padx=10, pady=5)
             checkboxes.append((task_id, var))
 
