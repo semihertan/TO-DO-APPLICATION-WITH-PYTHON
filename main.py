@@ -167,7 +167,7 @@ def main_window(username):
     person_img_data = Image.open("person_icon.png")
     person_img = CTkImage(dark_image=person_img_data, light_image=person_img_data)
     CTkButton(master=left_frame, image=person_img, text="Account", fg_color="transparent", font=("Arial Bold", 14),
-              hover_color="#121424", anchor="w").pack(anchor="center", ipady=5, pady=(100, 0))
+              hover_color="#121424", anchor="w", command=lambda: account_window()).pack(anchor="center", ipady=5, pady=(100, 0))
 
     # notifications button
     notification_number_var = StringVar()
@@ -177,8 +177,9 @@ def main_window(username):
     CTkButton(master=left_frame, image=list_img, text="Notifications", fg_color="transparent", font=("Arial Bold", 14),
               hover_color="#121424", anchor="w", command=lambda: notifications_window()).pack(anchor="center", ipady=5, pady=(16, 0))
 
-    notification_number_label = CTkLabel(master=left_frame, textvariable=notification_number_var, fg_color="black", font=("Arial", 14))
-    notification_number_label.place(x=25, y=255)
+    if notification_number_var.get() != "0":
+        notification_number_label = CTkLabel(master=left_frame, textvariable=notification_number_var, fg_color="black", font=("Arial", 14))
+        notification_number_label.place(x=25, y=344)
 
     # calendar button
     returns_img_data = Image.open("calendar_icon.png")
@@ -187,12 +188,12 @@ def main_window(username):
               hover_color="#121424", anchor="w", command=lambda: open_calendar_window()).pack(anchor="center", ipady=5,
                                                                                               pady=(16, 0))
 
-
     # ayarlar butonu
     settings_img_data = Image.open("settings.png")
     settings_img = CTkImage(dark_image=settings_img_data, light_image=settings_img_data)
     CTkButton(master=left_frame, image=settings_img, text="Settings", fg_color="transparent", font=("Arial Bold", 14),
-              hover_color="#121424", anchor="w", command=lambda: settings_window()).pack(anchor="center", ipady=5, pady=(159, 0))
+              hover_color="#121424", anchor="w", command=lambda: settings_window()).pack(anchor="center", ipady=5, pady=(135, 0))
+
 
     # sağ arkaplan
     right_bg_image_data = Image.open("and Sparkle! (1).png")
@@ -273,7 +274,7 @@ def main_window(username):
     success_percentage_value_label = CTkLabel(master=success_frame, text="0%", font=("Arial", 30))
     success_percentage_value_label.place(x=107, y=33)
 
-    CTkLabel(master=app, text="developed by SEMIH ERTAN", text_color="gray25", fg_color="black", font=("LeagueSpartan", 6, "bold")).place(x=911, y=630)
+    CTkLabel(master=app, text="developed by SEMIH ERTAN", text_color="gray25", fg_color="black", font=("LeagueSpartan", 8, "bold")).place(x=886, y=630)
 
 
     # sound effect loading
@@ -331,19 +332,19 @@ def main_window(username):
 
     def notifications_window():
         notifications_window = CTkToplevel(app)
-        notifications_window.geometry("500x500")
+        notifications_window.geometry("500x350")
         notifications_window.title("Notifications")
         notifications_window.resizable(0, 0)
 
         new_window_x = app.winfo_x() + (app.winfo_width() - 500) // 2
-        new_window_y = app.winfo_y() + (app.winfo_height() - 500) // 2
+        new_window_y = app.winfo_y() + (app.winfo_height() - 350) // 2
 
-        notifications_window.geometry(f"500x500+{new_window_x}+{new_window_y}")
+        notifications_window.geometry(f"500x350+{new_window_x}+{new_window_y}")
         notifications_window.transient(app)
         notifications_window.grab_set()
 
         past_tasks_label = CTkLabel(master=notifications_window, text="You have overdue tasks", font=("Arial", 30, "bold"))
-        past_tasks_label.pack(padx=25, pady=20, anchor="w")
+        past_tasks_label.pack(padx=25, pady=20)
 
         past_tasks_frame = CTkScrollableFrame(master=notifications_window, width=300, height=200)
         past_tasks_frame.pack(pady=10)
@@ -352,6 +353,41 @@ def main_window(username):
             task_name, due_date = task
             task_label = CTkLabel(master=past_tasks_frame, text=f"{task_name}   {due_date}", text_color="red")
             task_label.pack(padx=5, pady=5, anchor="w")
+
+    def account_window():
+        account_window = CTkToplevel(app)
+        account_window.geometry("500x300")
+        account_window.title("Settings")
+        account_window.resizable(0, 0)
+
+        new_x = app.winfo_x() + (app.winfo_width() - 500) // 2
+        new_y = app.winfo_y() + (app.winfo_height() - 300) // 2
+
+        account_window.geometry(f"500x300+{new_x}+{new_y}")
+        account_window.transient(app)
+        account_window.grab_set()
+
+        current_username = database.get_username(user_id)
+        current_password = database.get_password(user_id)
+        username_var = StringVar()
+        username_var.set(current_username)
+        password_var = StringVar()
+        password_var.set(current_password)
+
+        CTkLabel(master=account_window, text="Change Username").pack(pady=10)
+        username_entry = CTkEntry(master=account_window, placeholder_text="new username", textvariable=username_var)
+        username_entry.pack(pady=10)
+
+        CTkLabel(master=account_window, text="Change Password").pack(pady=10)
+        password_entry = CTkEntry(master=account_window, placeholder_text="new password", textvariable=password_var)
+        password_entry.pack(pady=10)
+
+        def save_changes():
+            database.save_user(user_id, username_entry.get(), password_entry.get())
+            messagebox.showinfo("Saved Changes", "Save changes successfully")
+
+        save_button = CTkButton(master=account_window, text="Save Changes", command=save_changes)
+        save_button.pack(pady=10)
 
     def settings_window():
         settings_window = CTkToplevel(app)
@@ -366,27 +402,11 @@ def main_window(username):
         settings_window.transient(app)
         settings_window.grab_set()
 
-        current_username = database.get_username(user_id)
-        current_password = database.get_password(user_id)
-        username_var = StringVar()
-        username_var.set(current_username)
-        password_var = StringVar()
-        password_var.set(current_password)
+        CTkLabel(master=settings_window, text="Contact With Me").pack(pady=10)
+        CTkLabel(master=settings_window, text="semihertanceng@outlook.com").pack(pady=10)
 
-        CTkLabel(master=settings_window, text="Change Username").pack(pady=10)
-        username_entry = CTkEntry(master=settings_window, placeholder_text="new username", textvariable=username_var)
-        username_entry.pack(pady=10)
 
-        CTkLabel(master=settings_window, text="Change Password").pack(pady=10)
-        password_entry = CTkEntry(master=settings_window, placeholder_text="new password", textvariable=password_var)
-        password_entry.pack(pady=10)
 
-        def save_changes():
-            database.save_user(user_id, username_entry.get(), password_entry.get())
-            messagebox.showinfo("Saved Changes", "Save changes successfully")
-
-        save_button = CTkButton(master=settings_window, text="Save Changes", command=save_changes)
-        save_button.pack(pady=10)
 
     def add_task(task_id, task_text):
         var = IntVar()
@@ -642,7 +662,6 @@ def main_window(username):
         database.repeat_tasks()
         database.remove_completed_tasks()
         schedule_task_removal()
-
 
 
     def schedule_reminder_check():
