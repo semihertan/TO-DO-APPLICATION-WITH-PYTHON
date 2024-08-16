@@ -14,17 +14,13 @@ set_default_color_theme("NightTrain.json")
 
 database.initialize_db()
 
-signup_bg_data = Image.open("signup_bg.jpg")
-login_bg_data = Image.open("login_bg_3.jpg")
+login_bg_data = Image.open("login_bg.jpg")
 username_icon_data = Image.open("username_icon.png")
 password_icon_data = Image.open("password_icon.png")
-google_icon_data = Image.open("google-icon.png")
 
-signup_bg_image = CTkImage(dark_image=signup_bg_data, light_image=signup_bg_data, size=(300, 500))
 login_bg_image = CTkImage(dark_image=login_bg_data, light_image=login_bg_data, size=(300, 480))
 username_icon = CTkImage(dark_image=username_icon_data, light_image=username_icon_data, size=(20, 20))
 password_icon = CTkImage(dark_image=password_icon_data, light_image=password_icon_data, size=(17, 17))
-google_icon = CTkImage(dark_image=google_icon_data, light_image=google_icon_data, size=(17, 17))
 
 # Sign-up window
 def signup_window():
@@ -140,9 +136,7 @@ def main_window(username):
     global task_list
     user_id = database.get_user_id(username)
     task_list = database.get_tasks_from_db(user_id)
-    past_due_tasks = database.get_past_due_tasks(user_id)
-    database.remove_past_due_tasks(user_id)
-
+    past_due_tasks = database.remove_past_due_tasks(user_id)
 
     app = CTk()
     app.title("ERTAN")
@@ -150,12 +144,12 @@ def main_window(username):
     app.resizable(0, 0)
     set_appearance_mode("dark")
 
-    # Sol siyah çerçeve
+    # left side frame
     left_frame = CTkFrame(master=app, fg_color="black", width=216, height=650, corner_radius=0)
     left_frame.pack_propagate(0)
     left_frame.pack(fill="y", anchor="w", side="left")
 
-    # logo ikonu
+    # logo icon
     logo_img_data = Image.open("logo.jpeg")
     logo_img = CTkImage(dark_image=logo_img_data, light_image=logo_img_data, size=(165, 155))
 
@@ -163,7 +157,7 @@ def main_window(username):
 
     CTkLabel(master=left_frame, text=f"Welcome Back\n{username}", font=("LeagueSpartan", 12, "bold")).pack(pady=(5, 0))
 
-    # hesap butonu
+    # account button
     person_img_data = Image.open("person_icon.png")
     person_img = CTkImage(dark_image=person_img_data, light_image=person_img_data)
     CTkButton(master=left_frame, image=person_img, text="Account", fg_color="transparent", font=("Arial Bold", 14),
@@ -185,18 +179,16 @@ def main_window(username):
     returns_img_data = Image.open("calendar_icon.png")
     returns_img = CTkImage(dark_image=returns_img_data, light_image=returns_img_data)
     CTkButton(master=left_frame, image=returns_img, text="Calendar", fg_color="transparent", font=("Arial Bold", 14),
-              hover_color="#121424", anchor="w", command=lambda: open_calendar_window()).pack(anchor="center", ipady=5,
-                                                                                              pady=(16, 0))
+              hover_color="#121424", anchor="w", command=lambda: open_calendar_window()).pack(anchor="center", ipady=5, pady=(16, 0))
 
-    # ayarlar butonu
+    # settings butonu
     settings_img_data = Image.open("settings.png")
     settings_img = CTkImage(dark_image=settings_img_data, light_image=settings_img_data)
     CTkButton(master=left_frame, image=settings_img, text="Settings", fg_color="transparent", font=("Arial Bold", 14),
               hover_color="#121424", anchor="w", command=lambda: settings_window()).pack(anchor="center", ipady=5, pady=(135, 0))
 
-
-    # sağ arkaplan
-    right_bg_image_data = Image.open("and Sparkle! (1).png")
+    # right background
+    right_bg_image_data = Image.open("main_bg.png")
     right_bg_image = CTkImage(dark_image=right_bg_image_data, light_image=right_bg_image_data, size=(785, 650))
 
     right_frame = CTkFrame(master=app, fg_color="transparent", width=785, height=650, corner_radius=0)
@@ -205,13 +197,11 @@ def main_window(username):
 
     CTkLabel(master=right_frame, text="", image=right_bg_image).place(x=0, y=0)
 
-
-
     # buttons main frame
     buttons_frame = CTkFrame(master=app, corner_radius=0, fg_color="black", bg_color="black", width=260, height=50)
     buttons_frame.place(x=720, y=305)
 
-    # Görev ekle butonu
+    # add task button
     add_img = Image.open("add_icon.png").convert("RGBA")
     add_img = add_img.resize((40, 40))
     add_ctk_image = CTkImage(dark_image=add_img, light_image=add_img)
@@ -220,8 +210,8 @@ def main_window(username):
                            image=add_ctk_image)
     add_button.place(x=0, y=10)
 
-    # Görev silme butonu
-    remove_img = Image.open("trash-svgrepo-com (1).png").convert("RGBA")
+    # remove task button
+    remove_img = Image.open("trash_icon.png").convert("RGBA")
     remove_img = remove_img.resize((40, 40))
     remove_ctk_image = CTkImage(dark_image=remove_img, light_image=remove_img)
 
@@ -235,22 +225,22 @@ def main_window(username):
                               command=lambda criteria: refresh_task_list(criteria))
     sort_menu.place(x=100, y=10)
 
-    # Görev çerçevesi
+    # tasks scrollable frame
     checkbox_frame = CTkScrollableFrame(master=app, fg_color="black", bg_color="black", width=480, height=245,
                                         corner_radius=5)
     checkbox_frame.place(x=470, y=350)
 
-    # Yapılan iş kalan iş çerçevesi
+    # task status frame
     task_status_frame = CTkFrame(master=app, fg_color="black", border_color="MediumPurple3", border_width=1, width=200, height=100,
                                  corner_radius=5)
     task_status_frame.place(x=230, y=350)
 
-    # Tik işareti ikonu
+    # task status icon
     tik_image_data = Image.open("status_icon.png")
     tik_image = CTkImage(dark_image=tik_image_data, light_image=tik_image_data, size=(45, 45))
     CTkLabel(master=task_status_frame, image=tik_image, text="").place(x=10, y=26)
 
-    # Task status yazısı
+    # Task status label
     task_status_label = CTkLabel(master=task_status_frame, text="Task Status", font=("Arial", 15, "bold"))
     task_status_label.place(x=70, y=10)
 
@@ -265,7 +255,7 @@ def main_window(username):
                              corner_radius=5)
     success_frame.place(x=230, y=480)
 
-    # Success ikonu
+    # Success icon
     success_image_data = Image.open("success.png")
     success_image = CTkImage(dark_image=success_image_data, light_image=success_image_data, size=(55, 55))
     CTkLabel(master=success_frame, image=success_image, text="").place(x=15, y=22)
@@ -276,11 +266,9 @@ def main_window(username):
 
     CTkLabel(master=app, text="developed by SEMIH ERTAN", text_color="gray25", fg_color="black", font=("LeagueSpartan", 8, "bold")).place(x=886, y=630)
 
-
     # sound effect loading
     pygame.mixer.init()
     pygame.mixer.music.load(r"C:\Users\semih\PycharmProjects\TO-DO LIST APP\success_bell-6776.mp3")
-
 
 
     tasks = database.get_tasks_from_db(user_id)
@@ -312,6 +300,7 @@ def main_window(username):
 
         for task_id, var in checkboxes:
             database.update_task_status_in_db(task_id, var.get())
+
 
     def open_calendar_window():
         calendar_window = CTkToplevel(app)
@@ -350,9 +339,10 @@ def main_window(username):
         past_tasks_frame.pack(pady=10)
 
         for task in past_due_tasks:
-            task_name, due_date = task
+            task_id, task_name, due_date = task
             task_label = CTkLabel(master=past_tasks_frame, text=f"{task_name}   {due_date}", text_color="red")
             task_label.pack(padx=5, pady=5, anchor="w")
+
 
     def account_window():
         account_window = CTkToplevel(app)
@@ -389,23 +379,22 @@ def main_window(username):
         save_button = CTkButton(master=account_window, text="Save Changes", command=save_changes)
         save_button.pack(pady=10)
 
+
     def settings_window():
         settings_window = CTkToplevel(app)
-        settings_window.geometry("500x500")
+        settings_window.geometry("300x100")
         settings_window.title("Settings")
         settings_window.resizable(0, 0)
 
-        new_x = app.winfo_x() + (app.winfo_width() - 500) // 2
-        new_y = app.winfo_y() + (app.winfo_height() - 500) // 2
+        new_x = app.winfo_x() + (app.winfo_width() - 300) // 2
+        new_y = app.winfo_y() + (app.winfo_height() - 100) // 2
 
-        settings_window.geometry(f"500x500+{new_x}+{new_y}")
+        settings_window.geometry(f"300x100+{new_x}+{new_y}")
         settings_window.transient(app)
         settings_window.grab_set()
 
         CTkLabel(master=settings_window, text="Contact With Me").pack(pady=10)
         CTkLabel(master=settings_window, text="semihertanceng@outlook.com").pack(pady=10)
-
-
 
 
     def add_task(task_id, task_text):
@@ -436,7 +425,7 @@ def main_window(username):
         add_top_frame = CTkFrame(master=new_task_window, width=500, height=80)
         add_top_frame.pack(pady=10)
 
-        # Karakter sınırı için kontrol fonksiyonu
+        # control function for character length limit
         def limit_text_length(text):
             if len(text) > 40:
                 task_entry.delete(40, 'end')
@@ -474,6 +463,11 @@ def main_window(username):
 
             def select_date():
                 selected_date = cal.selection_get()
+
+                if selected_date < today.date():
+                    messagebox.showerror("Error", "You can't choose a past date. Please select a future date or today's date")
+                    return
+
                 selected_due_date.set(selected_date.strftime("%d.%m.%Y"))
                 calendar_window.destroy()
 
@@ -492,7 +486,7 @@ def main_window(username):
 
             if task_name:
                 if reminder_time.startswith("Today"):
-                    reminder_time = (datetime.now() + timedelta(minutes=2)).replace(second=0, microsecond=0).strftime("%d.%m.%Y %H:%M:%S")
+                    reminder_time = (datetime.now() + timedelta(hours=3)).replace(minute=0, second=0, microsecond=0).strftime("%d.%m.%Y %H:%M:%S")
                 elif reminder_time.startswith("Tomorrow"):
                     reminder_time = (datetime.now() + timedelta(days=1)).replace(hour=3, minute=0, second=0, microsecond=0).strftime("%d.%m.%Y %H:%M:%S")
                 else:
@@ -531,13 +525,14 @@ def main_window(username):
         repeater_options = ["No Repeater", "Every Day", "Every Week"]
         selected_repeater_option = StringVar(value=repeater_options[0])
 
+
         repeater_menu = CTkOptionMenu(options_frame, values=repeater_options, variable=selected_repeater_option)
         repeater_menu.place(x=180, y=20)
 
         # reminder button functions
         now = datetime.now()
-        three_hours_later = now + timedelta(minutes=2)
-        three_hours_later = three_hours_later.replace(second=0, microsecond=0)
+        three_hours_later = now + timedelta(hours=3)
+        three_hours_later = three_hours_later.replace(minute=0, second=0, microsecond=0)
         today_option = three_hours_later.strftime("Today %H:%M")
 
         tomorrow = now + timedelta(days=1)
@@ -546,10 +541,61 @@ def main_window(username):
 
         next_week_option = (tomorrow_morning + timedelta(weeks=1)).strftime("Next Week %H:%M")
 
-        reminder_options = ["No Reminder", today_option, tomorrow_option, next_week_option]
+        reminder_options = ["No Reminder", today_option, tomorrow_option, next_week_option, "Manual Setting"]
         selected_reminder_option = StringVar(value=reminder_options[0])
 
-        reminder_menu = CTkOptionMenu(options_frame, values=reminder_options, variable=selected_reminder_option)
+        def open_reminder_picker():
+            reminder_window = CTkToplevel(app)
+            reminder_window.title("Set Reminder")
+            reminder_window.geometry("300x350")
+            reminder_window.resizable(0, 0)
+
+            reminder_window.geometry(f"{300}x{350}+{new_x}+{new_y}")
+            reminder_window.transient(app)
+            reminder_window.grab_set()
+
+            today = datetime.today()
+            cal = Calendar(reminder_window, selectmode='day', year=today.year, month=today.month, day=today.day,
+                           date_pattern='dd.mm.yyyy')
+            cal.pack(pady=20)
+
+            # Saat ve dakika seçenekleri
+            hour_var = StringVar(value="09")
+            minute_var = StringVar(value="00")
+
+            hour_options = [f"{h:02}" for h in range(24)]
+            minute_options = [f"{m:02}" for m in range(0, 60, 5)]  # 5 dakikalık artışlarla
+
+            hour_menu = CTkOptionMenu(reminder_window, values=hour_options, variable=hour_var)
+            hour_menu.pack(pady=5)
+
+            minute_menu = CTkOptionMenu(reminder_window, values=minute_options, variable=minute_var)
+            minute_menu.pack(pady=5)
+
+            def select_reminder():
+                selected_date = cal.selection_get()
+                selected_time = f"{hour_var.get()}:{minute_var.get()}"
+
+                # Geçmiş tarih kontrolü
+                if selected_date < today.date() or (
+                        selected_date == today.date() and selected_time < today.strftime("%H:%M:%S")):
+                    messagebox.showerror("Error",
+                                         "You can't set a reminder in the past. Please select a future date and time.")
+                    return
+
+                reminder_time = f"{selected_date.strftime('%d.%m.%Y')} {selected_time}"
+                selected_reminder_option.set(reminder_time)
+                reminder_window.destroy()
+
+            select_button = CTkButton(master=reminder_window, text="Set Reminder", command=select_reminder)
+            select_button.pack(pady=10)
+
+        # Eski reminder menüye bu seçeneği ekliyoruz
+        def handle_reminder_option(choice):
+            if choice == "Manual Setting":
+                open_reminder_picker()
+
+        reminder_menu = CTkOptionMenu(options_frame, values=reminder_options, variable=selected_reminder_option, command=handle_reminder_option)
         reminder_menu.place(x=340, y=20)
 
         selected_date_label = CTkLabel(master=new_task_window, textvariable=selected_due_date)
@@ -583,24 +629,18 @@ def main_window(username):
             task_text_length = len(task_text)
             display_text = task_text
 
+            #  making gaps and date insertions in the task frame
             if repeat_interval:
                 repeater_length = len(repeat_interval)
                 repeater_text = repeat_interval
-
             if is_favorite:
                 display_text += " ★"
                 total_length = 52
             space = total_length - task_text_length - repeater_length
-
             for i in range(space):
                 display_text += " "
-
-
-
             if selected_due_date != "No Date Selected":
                 display_text += f"{repeater_text}  {selected_due_date}"
-
-
 
             var = IntVar(value=task_status)
             checkbox = CTkCheckBox(master=checkbox_frame, text=display_text, variable=var, font=("JetBrains Mono", 11, "bold"), command=update_task_status)
@@ -651,18 +691,16 @@ def main_window(username):
 
         CTkButton(master=remove_window, text="Remove Selected Tasks", command=remove_selected_tasks).pack(pady=10)
 
-    # günlük tamamlanmış görevleri silme
+    # deleting completed tasks day by day
     def schedule_task_removal():
         now = datetime.now()
-        next_time = (now + timedelta(minutes=2)).replace(second=0, microsecond=0)
+        next_time = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
         delay = (next_time - now).total_seconds()
         threading.Timer(delay, task_removal_wrapper).start()
 
     def task_removal_wrapper():
-        database.repeat_tasks()
         database.remove_completed_tasks()
         schedule_task_removal()
-
 
     def schedule_reminder_check():
         database.check_reminders_and_notify()
