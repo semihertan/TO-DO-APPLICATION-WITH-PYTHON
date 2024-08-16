@@ -18,6 +18,7 @@ def initialize_db():
                       is_favorite INTEGER default 0,
                       due_date TEXT,
                       repeat_interval TEXT,
+                      reminder_time TEXT,
                       FOREIGN KEY (user_id) REFERENCES users(id))''')
     conn.commit()
     conn.close()
@@ -66,19 +67,19 @@ def check_credentials(username, password):
     conn.close()
     return result
 
-def add_task_to_db(user_id, task, is_favorite, due_date, repeat_interval=None):
+def add_task_to_db(user_id, task, is_favorite, due_date, repeat_interval=None, reminder_time=None):
     due_date_str = due_date.get() if isinstance(due_date, StringVar) else due_date
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO tasks (user_id, task, status, is_favorite, due_date, repeat_interval) VALUES (?, ?, ?, ?, ?, ?)",
-                   (user_id, task, 0, is_favorite, due_date_str, repeat_interval))
+    cursor.execute("INSERT INTO tasks (user_id, task, status, is_favorite, due_date, repeat_interval, reminder_time) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                   (user_id, task, 0, is_favorite, due_date_str, repeat_interval, reminder_time))
     conn.commit()
     conn.close()
 
 def get_tasks_from_db(user_id):
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT id, task, status, is_favorite, due_date, repeat_interval FROM tasks WHERE user_id = ?", (user_id,))
+    cursor.execute("SELECT id, task, status, is_favorite, due_date, repeat_interval, reminder_time FROM tasks WHERE user_id = ?", (user_id,))
     tasks = cursor.fetchall()
     conn.close()
     return tasks
@@ -90,12 +91,6 @@ def remove_task_from_db(task_id):
     conn.commit()
     conn.close()
 
-def remove_completed_tasks():
-    conn = sqlite3.connect("user_data.db")
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM tasks WHERE status = ?", (1,))
-    conn.commit()
-    conn.close()
 
 def update_task_status_in_db(task_id, status):
     conn = sqlite3.connect("user_data.db")
@@ -112,70 +107,86 @@ def get_user_id(username):
     conn.close()
     return user_id
 
-def get_past_due_tasks(user_id):
+def remove_completed_tasks():
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
-    now = datetime.now().strftime('%d.%m.%Y')
-    cursor.execute("SELECT task, due_date FROM tasks WHERE user_id = ? AND due_date < ?", (user_id, now))
-    past_due_tasks = cursor.fetchall()
+
+    # Tekrar etmeyen tamamlanmış görevleri sil
+    cursor.execute("DELETE FROM tasks WHERE status = 1 AND repeat_interval IS NULL")
+
+    # Tekrar eden görevlerin işaretlerini kaldır (tamamlanma durumunu sıfırla)
+    cursor.execute("UPDATE tasks SET status = 0 WHERE status = 1 AND repeat_interval ='Every Day'")
+
+    cursor.execute("SELECT id, due_date FROM tasks WHERE status = 1 AND repeat_interval = 'Every Week'")
+    weekly_tasks = cursor.fetchall()
+
+    for task_id, due_date in weekly_tasks:
+        due_date_dt = datetime.strptime(due_date, '%d.%m.%Y')
+        one_week_later = due_date_dt + timedelta(weeks=1)
+
+        if datetime.now() >= one_week_later:
+            cursor.execute("UPDATE tasks SET status = 0, due_date = ? WHERE id = ?", (one_week_later.strftime("%d.%m.%Y"), task_id,))
+
+    conn.commit()
     conn.close()
-    return past_due_tasks
 
 def remove_past_due_tasks(user_id):
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
     now = datetime.now().strftime('%d.%m.%Y')
-    cursor.execute("SELECT id FROM tasks WHERE user_id = ? AND due_date < ?", (user_id, now))
+
+    # Tarihi geçmiş görevleri seç
+    cursor.execute("SELECT id, task, due_date, repeat_interval FROM tasks WHERE user_id = ? AND due_date < ?", (user_id, now))
     removed_past_due_tasks = cursor.fetchall()
 
+    # to be displayed only once on the notification screen
     for task_id in removed_past_due_tasks:
         cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id[0],))
 
-    conn.commit()
-    conn.close()
+    # Bildirimde göstermek için tarihi geçmiş görevler listesi
+    past_due_notifications = [(task_id, task, due_date) for task_id, task, due_date, repeat_interval in removed_past_due_tasks]
 
 
-def repeat_tasks():
-    conn = sqlite3.connect("user_data.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, user_id, task, is_favorite, due_date, repeat_interval FROM tasks")
-    tasks = cursor.fetchall()
-    today = datetime.now().strftime('%d.%m.%Y')
-
-    for task_id, user_id, task, is_favorite, due_date, repeat_interval in tasks:
-        if repeat_interval and due_date and due_date != "No Date Selected":
+    for task_id, task, due_date, repeat_interval in removed_past_due_tasks:
+        if repeat_interval:  # Eğer görev tekrarlanıyorsa
             due_date_dt = datetime.strptime(due_date, '%d.%m.%Y')
             next_due_date = None
+
             if repeat_interval == "Every Day":
                 next_due_date = due_date_dt + timedelta(days=1)
             elif repeat_interval == "Every Week":
                 next_due_date = due_date_dt + timedelta(weeks=1)
-            pass
+            # Diğer repeat interval'lar için de eklenebilir...
 
-            if next_due_date and next_due_date.strftime("%d.%m.%Y") == today:
-                cursor.execute("INSERT INTO tasks(user_id, task, status, is_favorite, due_date, repeat_interval) VALUES (?, ?, ?, ?, ?, ?)"
-                               ,(user_id, task, 0, is_favorite, next_due_date.strftime("%d.%m.%Y"), repeat_interval))
+            if next_due_date:
+                # Görevi yeni tarihle tekrar ekle
+                cursor.execute(
+                    "INSERT INTO tasks(user_id, task, status, is_favorite, due_date, repeat_interval, reminder_time) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (user_id, task, 0, 0, next_due_date.strftime('%d.%m.%Y'), repeat_interval, None)
+                )
+
+        # Orijinal görevi sil
+        cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
 
     conn.commit()
     conn.close()
 
-
+    # Bildirimde göstermek için geri dön
+    return past_due_notifications
 
 def check_reminders_and_notify():
     conn = sqlite3.connect("user_data.db")
     cursor = conn.cursor()
-    now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+    now = datetime.now().replace(second=0, microsecond=0).strftime("%d.%m.%Y %H:%M:%S")
 
-    cursor.execute("SELECT id, task, remimder_time FROM tasks WHERE reminder_time = ?", (now,))
+    cursor.execute("SELECT id, task, reminder_time FROM tasks WHERE reminder_time = ? AND status = 0", (now,))
     tasks = cursor.fetchall()
 
     for task_id, task, reminder_time in tasks:
         notification.notify(
-            title="TASK REMAINDER",
-            message=f"Reminder: {task} is due now.",
+            title="!!! TASK REMINDER !!!",
+            message=f"You have a task to do named -{task}-",
             timeout=10
         )
-        cursor.execute("UPDATE tasks SET status = 1 WHERE id = ?", (task_id,))
-        conn.commit()
 
     conn.close()
