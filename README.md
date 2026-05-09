@@ -1,6 +1,8 @@
-# TO-DO LIST APP
+# TO-DO APPLICATION WITH PYTHON
 
 CustomTkinter ile gelistirilmis masaustu gorev takip uygulamasi. Kullanici girisi, gorev ekleme/silme, favori gorevler, tarih secimi, tekrar eden gorevler ve hatirlatici bildirimleri destekler.
+
+GitHub: https://github.com/semihertan/TO-DO-APPLICATION-WITH-PYTHON
 
 ## Ozellikler
 
@@ -62,20 +64,16 @@ pyinstaller packaging/main.spec
 
 Cikti dosyalari `dist/` klasorune yazilir. `build/` ve `dist/` klasorleri Git tarafinda yok sayilir.
 
-## GitHub notlari
+## GitHub Yapilandirmasi
 
 Bu proje GitHub'a yuklemeye hazir olacak sekilde yapilandirildi:
 
+- `origin` remote adresi bu repo olarak ayarlandi.
 - `.gitignore` ile sanal ortam, derleme ciktilari, cache dosyalari ve yerel veritabani dislandi.
-- `.github/workflows/python-check.yml` ile pull request ve push islemlerinde Python syntax kontrolu eklendi.
+- `.github/workflows/python-check.yml` ile push ve pull request icin Python syntax kontrolu eklendi.
 - Issue ve pull request sablonlari eklendi.
 - `.gitattributes` ile metin dosyalari icin satir sonu davranisi sabitlendi.
 
-Ilk yayinlama icin GitHub'da bos bir repo olusturduktan sonra su komutlari kullanilabilir:
+## Lisans
 
-```powershell
-git add .
-git commit -m "Initial project structure"
-git remote add origin https://github.com/<kullanici-adi>/<repo-adi>.git
-git push -u origin main
-```
+Bu proje MIT lisansi ile yayinlanir. Ayrintilar icin `LICENSE` dosyasina bakin.
